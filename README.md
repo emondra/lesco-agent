@@ -54,8 +54,32 @@ El experimento se ejecuta sobre texto fijo; el reconocimiento de voz se usa en l
 |---|---|
 | `PLAN_PROYECTO.md` | Requisitos, cobertura, viabilidad, riesgos, arquitectura y fases. |
 | `TODO.md` | Tareas pendientes por fase. |
+| `docs/` | Propuesta H1, referencias, datos y ética, registro de uso de IA. |
+| `data/lexicon/` | Índice del Diccionario LESCO del CENAREC (1104 entradas) y su procedencia. |
+| `mcp_server/` | Servidor MCP propio: `buscar_sena`, `validar_secuencia`, `guardar_resultado`. |
+| `agente/` | Agente y cliente MCP (en construcción). |
+| `tests/` | Pruebas automáticas. |
 
-*Instalación, configuración y el comando de reproducción se documentarán cuando exista código.*
+## Requisitos
+
+Python 3.10 o superior. Sin dependencias externas.
+
+## Pruebas
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Servidor MCP
+
+```bash
+python mcp_server/servidor_lesco.py --salidas resultados/salidas
+```
+
+Habla MCP por stdio (JSON-RPC 2.0, un mensaje por línea). El servidor valida cada argumento,
+rechaza IDs que no existen en el diccionario y nunca sobrescribe un resultado guardado.
+
+*El comando que regenera los resultados se documentará cuando exista el experimento.*
 
 ## Autoría
 

@@ -47,10 +47,11 @@ decisiones de ese plan.
 
 ## F3 · Servidor MCP (3 – 5 nov)
 
-- [ ] Esquemas estrictos y descripciones de "cuándo usar" para las 3 herramientas.
-- [ ] Implementar `buscar_sena`, `validar_secuencia`, `guardar_resultado`.
-- [ ] Validación del lado del servidor con mensajes de rechazo útiles.
-- [ ] Pruebas de entradas válidas e inválidas.
+- [x] Esquemas estrictos y descripciones de "cuándo usar" para las 3 herramientas.
+- [x] Implementar `buscar_sena`, `validar_secuencia`, `guardar_resultado`.
+- [x] Validación del lado del servidor con mensajes de rechazo útiles.
+- [x] Cliente MCP mínimo (`agente/mcp_cliente.py`, interfaz del kit; D13).
+- [x] Pruebas de entradas válidas e inválidas (24 pruebas, todas pasan).
 
 ## F4 · Agente, Skill y política (5 – 6 nov)
 
