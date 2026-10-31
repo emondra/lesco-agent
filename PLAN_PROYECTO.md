@@ -176,36 +176,33 @@ demostración y el avatar 3D fuera del alcance mínimo.
 
 ## 6. Arquitectura mínima viable (aprobada) [D]
 
-Se conserva la estructura de capas de la propuesta, ajustando el alcance:
+**Estado al 2026-11-01: implementada hasta F4** (revisión 3 de esta sección; refleja el código).
 
 ```
- [Audio .wav]                                 (solo demo y entrada opcional)
-      │  stt/  — transcripción + normalización + segmentación (cacheada en disco)
-      ▼
- [Texto en español]  ◄─── eval/casos  (entrada del experimento: texto fijo)
-      │
-      ▼
- ┌──────────────────────── agent/ (basado en agente.py del kit) ─────────────────────┐
- │  LLM  +  Config A: instrucciones genéricas   |   Config B: skill/SKILL.md          │
- │  policy/permisos (permitidas · confirmación · denegadas · ocultas; límites)        │
- │  Envoltura de resultados de herramienta como datos no confiables                   │
+ [Audio .wav] ── stt/ (F8, solo demo) ──┐
+                                        ▼
+                       eval/casos.jsonl  {caso_id, texto}      ← transcripciones (texto de terceros)
+                                        │  (el servidor nunca expone etiquetas de referencia)
+ ┌──────────────── agente/agente.py (adaptado del kit) ───────────────────────────────┐
+ │ objetivo fijo por caso: "Caso X. Obtén la transcripción... guarda con caso_id=X"   │
+ │ instrucciones  A: instrucciones_genericas.md                                       │
+ │                B: instrucciones_genericas.md + skill/SKILL.md   ← única variable   │
+ │ modelo claude-sonnet-5-5, esfuerzo medium (idénticos en A y B)                     │
+ │ política (host): politica/politica_experimento.json · límites de pasos y tokens    │
+ │ envoltura de resultados de herramienta como datos no confiables                    │
  └──────────────┬─────────────────────────────────────────────────────────────────────┘
-                │ MCP (stdio)
+                │ MCP stdio (agente/mcp_cliente.py)
                 ▼
- ┌──────────── mcp_server/ ─────────────┐        ┌──────── data/lexicon/ ────────┐
- │ buscar_sena        (lectura)         │ ─────► │ entradas con ID, glosa,       │
- │ validar_secuencia  (lectura)         │        │ fuente, licencia, validador   │
- │ guardar_resultado  (escritura)       │ ─────► │ outputs/ (resultados)         │
- │ validación de esquemas en servidor   │        └───────────────────────────────┘
- └──────────────────────────────────────┘
-                │
-                ▼
- [Salida] secuencia de IDs/glosas + segmentos sin cobertura + indicador de incertidumbre
-                │
-                ▼
- viz/ mínima (texto/HTML: glosas + subtítulo)          Avatar 3D → trabajo futuro
-
- Transversal: traces/ (una traza JSON por ejecución) → leer_traza.py --csv → results/
+ ┌──────────── mcp_server/servidor_lesco.py ────────────┐    ┌──── data/lexicon/ ─────────────┐
+ │ obtener_transcripcion (lectura)  texto del caso      │◄───│ cenarec_indice.tsv (1104,      │
+ │ buscar_sena           (lectura)  exacta / parcial    │    │ SHA-256 verificado)            │
+ │ validar_secuencia     (lectura)  formato + existencia│    └────────────────────────────────┘
+ │ guardar_resultado     (escritura) revalida, ruta     │───► resultados/<exp>/<config>/rep<k>/<caso>.json
+ │                       confinada, sin sobrescribir    │
+ └──────────────────────────────────────────────────────┘
+ Transversal: trazas/<exp>/<config>/rep<k>/*.jsonl → agente/leer_traza.py --csv → métricas
+ Orquestación: agente/ejecutar_casos.py (repetición → caso → A/B alternadas; reanudable)
+ Salida final: secuencia de IDs + glosas + SIN_COBERTURA:<palabra>; avatar 3D → trabajo futuro (D5)
 ```
 
 ### Decisiones de diseño
@@ -228,30 +225,40 @@ D3, D5, D9 y D11 fueron aprobadas explícitamente por el autor el 2026-10-31; el
 | D13 | **Kit de clase 3 como referencia:** los archivos que faltan (`mcp_cliente.py`, configuración, política, guion simulado) se escriben desde cero en este repositorio, siguiendo el estilo del kit (Python estándar, sin dependencias). El artículo se escribe en LaTeX con una estructura que respete las secciones de la rúbrica; si llega la plantilla oficial, se migra a ella. | Decisión del autor (2026-10-31): el kit es un ejemplo. |
 | D14 | **Secretos:** la clave de la API solo se lee desde la variable de entorno `ANTHROPIC_API_KEY` o desde un `.env` local ignorado por git. Nunca se escribe en el código, la configuración, las trazas ni el artículo. | Seguridad y anonimización (NN4). |
 | D12 | **Calendario comprimido** al 2026-11-17 (sección 7). | Plazo de entrega confirmado por el autor. |
+| D15 | **Cuarta herramienta `obtener_transcripcion`** (F4): el agente recibe solo el `caso_id` y lee la frase por herramienta. | La transcripción es contenido de terceros: es el vector realista de inyección indirecta (S7). El servidor nunca devuelve etiquetas de referencia. |
+| D16 | **Definición de la tarea** en `eval/guia_anotacion.md` v1 (F4) — **requiere aprobación del autor:** (a) orden de la frase en español, sin sintaxis LESCO; (b) lista cerrada de palabras omitidas (artículos, preposiciones, conjunciones, pronombres, posesivos, auxiliares); (c) expresiones de varias palabras; (d) búsqueda por lema; (e) variante sin número; (f) un sinónimo como máximo; (g) `SIN_COBERTURA` para lo demás. | Hace que "precisión" sea medible y que dos anotadores puedan coincidir. Son simplificaciones lingüísticas declaradas, no afirmaciones sobre la gramática LESCO. |
+| D17 | **Esfuerzo `medium`** para Sonnet 5.5 en A y B, y reintentos ante errores transitorios de la API. | Menor costo y tiempo en una tarea de muchas llamadas cortas; mismo valor en A y B. |
 
-### Herramientas MCP previstas (desde la propuesta, a especificar)
+### Herramientas MCP implementadas (F3–F4)
 
-| Herramienta | Tipo | Política propuesta | Validación del servidor (borrador) |
-|---|---|---|---|
-| `buscar_sena` | Lectura | Permitida | Texto no vacío, longitud máxima, sin caracteres de control. |
-| `validar_secuencia` | Lectura | Permitida | Lista de IDs con tamaño máximo; cada ID debe existir. |
-| `guardar_resultado` | Escritura | Con confirmación en demo / permitida en experimento con ruta fija **[D, a discutir]** | IDs válidos, esquema estricto, nombre de archivo saneado, directorio fijo, sin sobrescritura. |
-| Escritura/borrado arbitrario de archivos, red | — | Denegadas / ocultas | — |
+| Herramienta | Tipo | Experimento | Demo | Validación del servidor |
+|---|---|---|---|---|
+| `obtener_transcripcion` | Lectura | permitir (máx. 2) | permitir | `caso_id` con patrón estricto; caso existente; solo devuelve `caso_id` y texto. |
+| `buscar_sena` | Lectura | permitir (máx. 40) | permitir | Texto 1–80 caracteres, sin control; `max_resultados` 1–10; argumentos extra rechazados. |
+| `validar_secuencia` | Lectura | permitir (máx. 5) | permitir | Lista 1–60; formato `CENAREC-n` o `SIN_COBERTURA:texto`; cada ID existe. |
+| `guardar_resultado` | Escritura | permitir (**máx. 1**) | **confirmar** | Revalida la secuencia; `caso_id` sin rutas; directorio fijo; nunca sobrescribe. |
+| `*__borrar*`, `*__eliminar*`, `*__sobrescribir*`, `*__ejecutar*` | — | denegar | denegar | — |
+| `*__admin*`, `*__depurar*` | — | ocultar | ocultar | — |
 
-### Métricas propuestas (a congelar antes del experimento) [D]
+Justificación completa en `politica/README.md`. Pruebas: 29 (léxico, servidor por MCP y agente
+completo con modelo simulado).
 
-- Exactitud de secuencia (coincidencia exacta con el estándar).
-- Precisión, exhaustividad y F1 a nivel de seña.
-- Tasa de abstención correcta en segmentos sin cobertura.
-- IDs inválidos propuestos por el agente (rechazados por el servidor).
-- Tokens, duración, pasos, llamadas, denegaciones y errores por ejecución (desde `leer_traza.py --csv`).
-- Media y desviación estándar sobre ≥ 3 ejecuciones por configuración.
+### Métricas (a congelar en `docs/metricas.md` antes de ejecutar A) [D]
+
+Por caso, comparando la secuencia guardada con la de referencia (elementos: IDs y
+`SIN_COBERTURA`, sin importar el texto que sigue a `SIN_COBERTURA:`):
+
+- **Exactitud de secuencia:** 1 si coincide exactamente (mismo orden y elementos), si no 0.
+- **Precisión, exhaustividad y F1** sobre multiconjuntos de elementos (independientes del orden).
+- **Exhaustividad de `SIN_COBERTURA`:** proporción de segmentos sin cobertura de la referencia que el agente marcó como tales.
+- **Caso sin guardar:** el agente terminó sin `guardar_resultado` exitoso (cuenta como F1 = 0).
+- **IDs rechazados por el servidor**, tokens de entrada y salida, duración, pasos, llamadas y denegaciones (desde las trazas).
+- Agregación: media por ejecución, y media y desviación estándar entre las 3 repeticiones; también por subconjunto normal/difícil.
 
 ### Vectores de inyección indirecta a estudiar [D]
 
-1. Texto transcrito que contiene instrucciones dirigidas al agente.
-2. Campos textuales de entradas del léxico devueltas por `buscar_sena`.
-3. Metadatos de casos o archivos de entrada.
+1. **Transcripción** (`obtener_transcripcion`) con instrucciones dirigidas al agente — vector principal.
+2. Variante de prueba del índice con una glosa manipulada (solo en el experimento de seguridad, nunca en el índice real).
 
 Los 5 ataques concretos se diseñan en la fase 7; los resultados se reportarán solo desde trazas.
 
@@ -281,6 +288,13 @@ El LLM anotador (D10, 40 llamadas cortas con Opus 5.5) suma menos de US$ 1.
 **Modelo elegido (D11): Sonnet 5.5 → presupuesto de referencia ≈ US$ 32.** Las cifras reales solo podrán reportarse
 desde las trazas.
 
+**Revisión tras F4 (estimación, no medición):** el agente hace una búsqueda por palabra y cada paso
+reenvía la conversación, así que el supuesto de 20 000 tokens de entrada por caso probablemente se
+quede corto. Si fueran ~100 000, el experimento con Sonnet 5.5 costaría del orden de US$ 70–100. El
+piloto (F6) mide el costo real antes de lanzar las 240 ejecuciones; si supera lo aceptable, el autor
+decide entre reducir casos (mínimo 40) o cambiar de modelo **antes** de medir la línea base. El
+anotador 2 con el índice completo en el prompt costaría ~US$ 5 (48 casos × ~20 000 tokens).
+
 ---
 
 ## 7. Fases de desarrollo
@@ -292,10 +306,10 @@ revisables.
 | Fase | Días (2026) | Objetivo | Entregables en el repositorio | Criterio de salida |
 |---|---|---|---|---|
 | **F0** Planificación | 31 oct | Analizar rúbrica y propuesta; acordar arquitectura. | `PLAN_PROYECTO.md`, `README.md`, `TODO.md` | ✅ Plan aprobado. |
-| **F1** Propuesta y referencias | 1 – 2 nov | Usuario concreto, datos, línea base; empezar a leer referencias. | `docs/propuesta_H1.md`, `docs/referencias.md` (registro de lectura) | 3 referencias leídas y registradas. |
-| **F2** Léxico y ética | 2 – 4 nov | Subconjunto del diccionario CENAREC (D9) y política de datos. | `data/lexicon/`, `docs/datos_y_etica.md` | Cada entrada con URL y fecha de consulta. |
-| **F3** Servidor MCP | 3 – 5 nov | Implementar las 3 herramientas con validación. | `mcp_server/`, pruebas de validación | Pruebas pasan; rechazos con mensajes útiles. |
-| **F4** Agente, Skill y política | 5 – 6 nov | Adaptar el kit: Config A y B, política, trazas, ejecutor de casos. | `agent/`, `skill/SKILL.md`, `policy/` | Un caso de extremo a extremo con traza completa (primero `--simulado`, luego el modelo real). |
+| **F1** Propuesta y referencias | 1 – 2 nov | Usuario concreto, datos, línea base; empezar a leer referencias. | `docs/propuesta_H1.md`, `docs/referencias.md` (registro de lectura) | ✅ Borrador hecho · ⏳ lectura de las 3 referencias (autor). |
+| **F2** Léxico y ética | 2 – 4 nov | Índice del diccionario CENAREC (D9) y política de datos. | `data/lexicon/`, `docs/datos_y_etica.md` | ✅ 1104 entradas, SHA-256 verificado · ⏳ permiso del CENAREC (autor). |
+| **F3** Servidor MCP | 3 – 5 nov | Implementar las herramientas con validación. | `mcp_server/`, `tests/` | ✅ Pruebas pasan; rechazos con mensajes útiles. |
+| **F4** Agente, Skill y política | 5 – 6 nov | Adaptar el kit: Config A y B, política, trazas, ejecutor de casos. | `agente/`, `skill/SKILL.md`, `politica/`, `eval/guia_anotacion.md` | ✅ Extremo a extremo con `--simulado` · ⏳ con el modelo real (falta clave válida). |
 | **F5** Conjunto de evaluación | 3 – 8 nov (en paralelo) | ≥ 40 casos, ≥ 30 % difíciles, anotación (D10) y kappa. | `eval/` | Kappa calculado; conjunto **congelado el 8 nov** (etiqueta git). |
 | **F6** Piloto y línea base | 8 – 9 nov | Piloto de 5 casos; Config A × 3. | `results/`, `traces/` | Línea base medida desde trazas. |
 | **F7** Experimento y seguridad | 9 – 11 nov | Config B × 3; 5 ataques de inyección; script de un comando. | `results/`, `security/` | Tablas regenerables desde trazas. |
@@ -305,6 +319,22 @@ revisables.
 
 Como no hay holgura: si el 8 de noviembre no está congelado el conjunto de evaluación, se recorta el
 STT (F8) antes que el experimento o el artículo.
+
+### 7.1 Plan detallado de F5 — conjunto de evaluación (aprobado el 2026-11-01)
+
+| Paso | Quién | Qué | Archivo |
+|---|---|---|---|
+| 1 | Claude | Redactar **48 casos** (margen sobre 40) de trámites en ventanilla: requisitos, pagos, horarios, filas, firmas, plazos. Sin nombres, cédulas, teléfonos ni direcciones. Objetivo: ≥ 20 difíciles (≥ 40 %, según §9 de la guía). | `eval/casos.jsonl` (`caso_id`, `texto`) y `eval/casos_meta.jsonl` (dificultad prevista y motivo) |
+| 2 | Claude | Redactar **5 casos de piloto aparte**, para medir costo sin tocar el conjunto de evaluación. | `eval/piloto/casos_piloto.jsonl` |
+| 3 | Autor | Revisar y aprobar los casos (puede editar o reemplazar cualquiera). | — |
+| 4 | Claude | Tokenizador determinista y plantilla por palabra. Las palabras de la lista cerrada (§3) se prellenan como `OMITIR`; las de contenido quedan vacías. | `eval/tokenizar.py`, `eval/anotaciones/plantilla.tsv` |
+| 5 | **Autor** | **Anotador 1:** llenar la etiqueta de cada palabra de contenido siguiendo la guía, con un buscador de línea de comandos como ayuda. Sin ver al anotador 2. Estimado: 2–3 horas. | `eval/anotaciones/anotador1.tsv`, `eval/buscar.py` |
+| 6 | Claude | **Anotador 2:** `claude-opus-5-5` con la guía y el índice completo en el prompt, prompt fijo y versionado, sin ver al anotador 1 ni al agente. | `eval/anotador_llm.py`, `eval/prompts/anotador2_v1.md`, `eval/anotaciones/anotador2.tsv` |
+| 7 | Claude | Kappa de Cohen sobre todas las palabras y **también solo sobre las de contenido** (las omitidas prellenadas inflarían el acuerdo). | `eval/kappa.py`, `eval/acuerdo.md` |
+| 8 | Claude propone, autor decide | Adjudicar cada desacuerdo con la guía; registrar la decisión y su motivo. | `eval/adjudicacion.md`, `eval/referencia.jsonl` |
+| 9 | Claude | Congelar: SHA-256 de casos, guía y referencia; etiqueta git `eval-v1`. Desde ahí no se modifica. | `eval/CONGELADO.md` |
+
+Requisitos externos: clave válida de la API (paso 6). Fecha límite de congelamiento: 8 nov.
 
 ### Reglas de trabajo
 
@@ -334,9 +364,12 @@ STT (F8) antes que el experimento o el artículo.
 - D3, D5, D9 y D11: **aprobadas** por el autor.
 - Entrega final: **2026-11-17**.
 
-**Abiertas (no bloquean el inicio):**
+**Abiertas:**
 
 1. Fecha de la defensa y si el H1/H2 tienen fecha propia o se evalúan con la entrega final.
+2. ~~Aprobar D15, D16 y D17 y el plan de F5~~ → **aprobados por el autor el 2026-11-01.**
+3. Clave válida de la API (la guardada en Windows responde 401).
+4. Cómo subir a GitHub los commits locales (repositorio público; ver `docs/datos_y_etica.md` sobre el índice del CENAREC).
 
 ## 9. Fuentes consultadas para D9 (pendientes de lectura completa)
 

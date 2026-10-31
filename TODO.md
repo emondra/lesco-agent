@@ -68,11 +68,17 @@ decisiones de ese plan.
 
 ## F5 · Conjunto de evaluación (3 – 8 nov)
 
-- [ ] Guía de anotación: etiqueta por segmento = ID del léxico o `SIN_COBERTURA`; criterio de "difícil" definido antes.
-- [ ] Redactar ≥ 40 casos sin datos personales, ≥ 30 % difíciles.
-- [ ] Anotador 1 (autor) y anotador 2 (LLM distinto del agente, prompt fijo, sin ver otras etiquetas).
-- [ ] Calcular kappa de Cohen y resolver desacuerdos (documentando cómo).
-- [ ] Congelar el conjunto el 8 nov (etiqueta git + hash).
+Detalle y responsables en PLAN_PROYECTO.md §7.1.
+
+- [x] Guía de anotación v1 (`eval/guia_anotacion.md`): etiqueta por palabra; criterio de "difícil" definido antes.
+- [x] **Autor:** aprobar D15, D16 (guía de la tarea), D17 y el plan de F5 (2026-11-01).
+- [ ] Redactar 48 casos sin datos personales (≥ 40 % difíciles) y 5 casos de piloto aparte.
+- [ ] **Autor:** revisar y aprobar los casos.
+- [ ] Tokenizador, plantilla con `OMITIR` prellenado y buscador de ayuda.
+- [ ] **Autor:** anotador 1 (2–3 horas estimadas).
+- [ ] Anotador 2 (`claude-opus-5-5`, prompt fijo; requiere clave válida).
+- [ ] Kappa (todas las palabras y solo contenido) y adjudicación registrada.
+- [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).
 
 ## F6 · Piloto y línea base (8 – 9 nov)
 
