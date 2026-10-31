@@ -39,10 +39,11 @@ decisiones de ese plan.
 
 ## F2 · Léxico y ética (2 – 4 nov)
 
-- [ ] Definir esquema del léxico (ID, glosa, variantes en español, URL de la entrada, fecha de consulta).
-- [ ] Elegir el subconjunto temático según el usuario de F1 (≈ 80–150 entradas).
-- [ ] Registrar cada entrada cotejándola a mano en el sitio del CENAREC. Ninguna entrada generada por LLM.
-- [ ] Redactar `docs/datos_y_etica.md`: anonimización, audio sintético, alcance no sustitutivo de intérpretes.
+- [x] Definir el esquema del léxico (`idw`, glosa; URL derivada) → `data/lexicon/FUENTE.md`.
+- [x] Registrar el índice completo del CENAREC (1104 entradas, verificado con SHA-256). Ninguna entrada generada por LLM.
+- [x] Comprobar la cobertura del escenario: hay PAGAR, FIRMAR, FACTURA, CERTIFICADO, ESPERAR, FILA, OFICINA, EXPEDIENTE; faltan DOCUMENTO, CÉDULA, FORMULARIO y TRÁMITE (servirán para los casos `SIN_COBERTURA`).
+- [x] Redactar `docs/datos_y_etica.md`.
+- [ ] **Autor:** escribir al contacto del sitio del CENAREC para informar del uso académico y pedir permiso explícito.
 
 ## F3 · Servidor MCP (3 – 5 nov)
 

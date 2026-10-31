@@ -1,0 +1,2 @@
+# Los datos se versionan con LF para que su SHA-256 sea estable en cualquier sistema.
+data/** text eol=lf
