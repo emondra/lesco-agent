@@ -24,15 +24,18 @@ decisiones de ese plan.
 - [x] Proponer arquitectura mínima viable y fases.
 - [x] Buscar una fuente candidata del vocabulario LESCO y estimar el presupuesto.
 - [x] Aprobar `PLAN_PROYECTO.md`.
-- [ ] Crear `docs/uso_de_ia.md` (registro de uso de IA desde el inicio).
+- [x] Crear `docs/uso_de_ia.md` (registro de uso de IA desde el inicio).
 
 ## F1 · Propuesta y referencias (1 – 2 nov)
 
-- [ ] Definir usuario concreto y situación concreta (un solo contexto, p. ej. un tipo de aviso institucional).
-- [ ] Estimar costo actual con fuente citable.
-- [ ] Explicitar línea base (Config A: instrucciones genéricas).
-- [ ] Leer Oviedo y Ramírez Valerio (2018) y otras 2 referencias; registrarlas en `docs/referencias.md` (URL/DOI, fecha, resumen propio).
-- [ ] Redactar `docs/propuesta_H1.md`.
+- [x] Proponer usuario concreto: persona sorda en ventanilla de trámites de una institución pública.
+- [x] Adoptar el escenario (el autor delegó lo técnico el 2026-11-01); revisar si la cobertura del diccionario alcanza (F2).
+- [x] Reunir evidencia del costo actual (escasez de intérpretes; comunicación solo escrita).
+- [ ] **Autor (opcional):** conseguir una tarifa vigente y verificable de interpretación LESCO por hora.
+- [x] Explicitar línea base (Config A: instrucciones genéricas).
+- [x] Verificar metadatos de 3 referencias para el H1 y 2 candidatas más (`docs/referencias.md`).
+- [ ] **Autor:** leer las 3 referencias del H1, marcarlas como leídas y escribir un resumen propio de cada una.
+- [x] Redactar borrador de `docs/propuesta_H1.md`.
 
 ## F2 · Léxico y ética (2 – 4 nov)
 
