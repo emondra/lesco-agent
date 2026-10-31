@@ -84,8 +84,9 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 
 ## F6 · Piloto y línea base (8 – 9 nov)
 
-- [ ] Congelar métricas en `docs/metricas.md` antes de ejecutar.
-- [ ] Piloto de 5 casos; recalibrar el presupuesto con `leer_traza.py`.
+- [x] Congelar métricas en `docs/metricas.md` (v1) antes de ejecutar.
+- [x] Puntuación y comando único (`eval/puntuar.py`, `reproducir.py`), referencia desde la adjudicación (`eval/construir_referencia.py`); probado con trazas simuladas.
+- [ ] Piloto de 5 casos (`eval/piloto/`); recalibrar el presupuesto con `leer_traza.py` (requiere clave válida).
 - [ ] Ejecutar Config A × 3; guardar todas las trazas.
 
 ## F7 · Experimento y seguridad (9 – 11 nov)

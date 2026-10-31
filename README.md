@@ -114,7 +114,16 @@ Resumen de trazas:
 python agente/leer_traza.py trazas/experimento/*/*/*.jsonl --csv resultados/metricas_trazas.csv
 ```
 
-*El comando único que regenera las tablas del artículo se documentará con el experimento.*
+## Reproducir los resultados
+
+Un solo comando regenera todas las tablas desde las trazas y los resultados guardados, sin llamar
+a la API (definiciones en [docs/metricas.md](docs/metricas.md)):
+
+```bash
+python reproducir.py
+```
+
+Escribe `resultados/tablas/experimento_filas.csv` y `resultados/tablas/experimento_resumen.md`.
 
 ## Autoría
 
