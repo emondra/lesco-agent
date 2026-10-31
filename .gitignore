@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# LESCO-Agent: ejecuciones sueltas, de prueba o de demostración (las del experimento sí se versionan)
+trazas/sueltas/
+trazas/humo/
+trazas/demo/
+resultados/salidas/
+resultados/humo/

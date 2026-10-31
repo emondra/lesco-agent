@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """
-Agente de voz del cliente — clase 3.
-
-Todo lo que en la clase 1 era una diapositiva, aquí es código que pueden leer:
+LESCO-Agent — adaptado del agente de la clase 3 (agente de voz del cliente).
 
     modelo          ModeloClaude (API real) o ModeloSimulado (guion, sin clave)
-    instrucciones   instrucciones.md  (rol, reglas, criterio de parada)
-    herramientas    descubiertas en tiempo de ejecución desde los servidores MCP
-    entorno         los servidores de config.json y la carpeta estado/
+    instrucciones   lista de archivos en la configuración (A: genéricas; B: genéricas + SKILL.md)
+    herramientas    descubiertas en tiempo de ejecución desde el servidor MCP propio
+    entorno         el servidor de la configuración, el archivo de casos y la carpeta de salidas
     bucle y control max_pasos, presupuesto de tokens, política de permisos, traza
 
 Uso:
-    python agente.py --simulado --auto-aprobar                # sin clave, sin preguntas
-    python agente.py --simulado                               # pregunta antes de escribir
-    ANTHROPIC_API_KEY=... python agente.py --objetivo "..."   # modelo real
+    python agente/agente.py --config agente/configs/demo.json --simulado --caso demo-001
+    python agente/agente.py --config agente/configs/B.json --caso c001 --casos eval/casos.jsonl
+
+La clave se lee de la variable de entorno ANTHROPIC_API_KEY o de un archivo .env en la raíz
+del repositorio (ignorado por git). Nunca se escribe en la traza.
+
+Cambios respecto del kit: objetivo por caso, instrucciones compuestas, rutas de casos y
+salidas por ejecución, reintentos ante errores transitorios de la API, motivo de parada
+explícito para cada stop_reason y metadatos del experimento en la traza.
 
 Sin dependencias externas: la API se llama con urllib, igual que MCP se habla a mano.
 """
 
 import argparse
 import fnmatch
+import hashlib
 import json
 import os
 import sys
@@ -29,16 +34,35 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-from mcp_cliente import ClienteMCP, ErrorMCP
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from mcp_cliente import ClienteMCP, ErrorMCP  # noqa: E402
 
 AQUI = Path(__file__).resolve().parent
+RAIZ = AQUI.parent
 SEPARADOR = "__"   # servidor__herramienta: evita choques de nombres entre servidores
 
-OBJETIVO_POR_DEFECTO = (
-    "Prepara el informe de voz del cliente del periodo cargado. Identifica el hallazgo "
-    "más grave, abre un ticket para el área responsable con la evidencia que lo sostiene, "
-    "y deja un borrador de correo para esa área. No abras tickets duplicados."
-)
+
+def objetivo_para(caso_id: str) -> str:
+    """Mismo objetivo para las configuraciones A y B: solo cambia el caso."""
+    return (f"Caso {caso_id}. Obtén la transcripción de este caso, represéntala como una secuencia "
+            f"de señas LESCO del diccionario disponible y guarda el resultado con caso_id={caso_id}.")
+
+
+def cargar_clave() -> str | None:
+    clave = os.environ.get("ANTHROPIC_API_KEY")
+    if clave:
+        return clave
+    env = RAIZ / ".env"
+    if env.exists():
+        for linea in env.read_text(encoding="utf-8").splitlines():
+            nombre, _, valor = linea.partition("=")
+            if nombre.strip() == "ANTHROPIC_API_KEY" and valor.strip():
+                return valor.strip().strip('"').strip("'")
+    return None
+
+
+class ErrorModelo(Exception):
+    pass
 
 
 # ===================================================================== política
@@ -83,35 +107,50 @@ class Politica:
 # ===================================================================== modelos
 class ModeloClaude:
     URL = "https://api.anthropic.com/v1/messages"
+    REINTENTOS = 4               # 429, 529 y 5xx son transitorios: se reintenta con espera creciente
 
-    def __init__(self, modelo: str, max_tokens: int):
+    def __init__(self, modelo: str, max_tokens: int, esfuerzo: str | None = None):
         self.modelo = modelo
         self.max_tokens = max_tokens
-        self.clave = os.environ.get("ANTHROPIC_API_KEY")
+        self.esfuerzo = esfuerzo
+        self.clave = cargar_clave()
         if not self.clave:
-            sys.exit("Falta ANTHROPIC_API_KEY. Sin clave, usen --simulado.")
+            raise ErrorModelo("Falta ANTHROPIC_API_KEY (variable de entorno o .env). Sin clave, usen --simulado.")
 
     def responder(self, sistema: str, mensajes: list, herramientas: list) -> dict:
-        cuerpo = json.dumps({
+        datos = {
             "model": self.modelo,
             "max_tokens": self.max_tokens,
             "system": sistema,
             "messages": mensajes,
             "tools": herramientas,
-        }).encode("utf-8")
-        req = urllib.request.Request(self.URL, data=cuerpo, method="POST", headers={
-            "x-api-key": self.clave,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        })
-        try:
-            with urllib.request.urlopen(req, timeout=120) as r:
-                return json.loads(r.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            detalle = e.read().decode("utf-8", "replace")
-            sys.exit(f"Error de la API ({e.code}): {detalle[:500]}")
-        except urllib.error.URLError as e:
-            sys.exit(f"No se pudo conectar con la API: {e.reason}")
+        }
+        if self.esfuerzo:
+            datos["output_config"] = {"effort": self.esfuerzo}
+        cuerpo = json.dumps(datos).encode("utf-8")
+        for intento in range(self.REINTENTOS + 1):
+            req = urllib.request.Request(self.URL, data=cuerpo, method="POST", headers={
+                "x-api-key": self.clave,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            })
+            try:
+                with urllib.request.urlopen(req, timeout=300) as r:
+                    return json.loads(r.read().decode("utf-8"))
+            except urllib.error.HTTPError as e:
+                detalle = e.read().decode("utf-8", "replace")
+                if (e.code in (429, 529) or e.code >= 500) and intento < self.REINTENTOS:
+                    espera = int(e.headers.get("retry-after") or 0) or 5 * 2 ** intento
+                    print(f"   API {e.code}: reintento {intento + 1} en {espera} s")
+                    time.sleep(espera)
+                    continue
+                raise ErrorModelo(f"Error de la API ({e.code}): {detalle[:500]}") from None
+            except urllib.error.URLError as e:
+                if intento < self.REINTENTOS:
+                    time.sleep(5 * 2 ** intento)
+                    continue
+                raise ErrorModelo(f"No se pudo conectar con la API: {e.reason}") from None
+        raise ErrorModelo("reintentos agotados")
 
 
 class ModeloSimulado:
@@ -147,10 +186,10 @@ class ModeloSimulado:
 
 # ===================================================================== traza
 class Traza:
-    def __init__(self, carpeta: Path):
+    def __init__(self, carpeta: Path, prefijo: str = "ejecucion"):
         carpeta.mkdir(parents=True, exist_ok=True)
-        self.ruta = carpeta / f"ejecucion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
-        self.fh = self.ruta.open("w", encoding="utf-8")
+        self.ruta = carpeta / f"{prefijo}_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.jsonl"
+        self.fh = self.ruta.open("x", encoding="utf-8")
 
     def evento(self, tipo: str, **datos) -> None:
         self.fh.write(json.dumps({"t": datetime.now().isoformat(timespec="seconds"),
@@ -194,12 +233,18 @@ def resumen_bloques(contenido: list) -> str:
 
 
 # ===================================================================== agente
-def ejecutar(args) -> int:
+def ejecutar(args) -> dict:
     config = json.loads(Path(args.config).read_text(encoding="utf-8"))
-    politica = Politica(json.loads((AQUI / config["politica"]).read_text(encoding="utf-8")))
-    instrucciones = (AQUI / config["instrucciones"]).read_text(encoding="utf-8")
+    politica = Politica(json.loads((RAIZ / config["politica"]).read_text(encoding="utf-8")))
+    archivos = config["instrucciones"]
+    archivos = archivos if isinstance(archivos, list) else [archivos]
+    instrucciones = "\n\n".join((RAIZ / a).read_text(encoding="utf-8").strip() for a in archivos) + "\n"
     limites = config["limites"]
-    traza = Traza(AQUI / config.get("carpeta_trazas", "trazas"))
+    objetivo = args.objetivo or objetivo_para(args.caso)
+    carpeta_trazas = Path(args.trazas) if args.trazas else RAIZ / config.get("carpeta_trazas", "trazas")
+    traza = Traza(carpeta_trazas, f"{config.get('nombre', 'agente')}_{args.caso}")
+    rutas = {"salidas": str(Path(args.salidas or RAIZ / config.get("carpeta_salidas", "resultados/salidas"))),
+             "casos": str(Path(args.casos or RAIZ / config.get("casos", "eval/casos.jsonl")))}
 
     # ---- 1. conectar servidores y descubrir herramientas
     print("\n== Conectando servidores MCP")
@@ -207,8 +252,8 @@ def ejecutar(args) -> int:
     catalogo, ocultas = [], []
     try:
         for srv in config["servidores"]:
-            comando = [sys.executable if c == "python" else c for c in srv["comando"]]
-            cli = ClienteMCP(srv["nombre"], comando, cwd=str(AQUI))
+            comando = [sys.executable if c == "python" else c.format(**rutas) for c in srv["comando"]]
+            cli = ClienteMCP(srv["nombre"], comando, cwd=str(RAIZ))
             info = cli.iniciar()
             clientes[srv["nombre"]] = cli
             herramientas = cli.listar_herramientas()
@@ -225,7 +270,10 @@ def ejecutar(args) -> int:
         print(f"\nERROR al conectar: {e}")
         for c in clientes.values():
             c.cerrar()
-        return 2
+        traza.evento("fin", motivo=f"error al conectar: {e}", pasos=0, tokens_entrada=0,
+                     tokens_salida=0, duracion_s=0, llamadas=[], respuesta_final="")
+        traza.cerrar()
+        return {"codigo": 2, "traza": traza.ruta, "motivo": f"error al conectar: {e}"}
 
     print(f"   catálogo visible para el modelo: {len(catalogo)} herramientas")
     for h in catalogo:
@@ -233,17 +281,32 @@ def ejecutar(args) -> int:
         print(f"     - {h['name']:42} [{decision}]")
     if ocultas:
         print(f"   ocultas por la política (el modelo no las ve): {', '.join(ocultas)}")
-    traza.evento("inicio", objetivo=args.objetivo, modelo=("simulado" if args.simulado else config["modelo"]),
-                 herramientas=[h["name"] for h in catalogo], ocultas=ocultas, limites=limites)
+    nombre_modelo = "simulado" if args.simulado else (args.modelo or config["modelo"])
+    traza.evento("inicio", objetivo=objetivo, modelo=nombre_modelo,
+                 herramientas=[h["name"] for h in catalogo], ocultas=ocultas, limites=limites,
+                 configuracion=config.get("nombre"), caso_id=args.caso, repeticion=args.repeticion,
+                 instrucciones=archivos,
+                 sha256_instrucciones=hashlib.sha256(instrucciones.encode("utf-8")).hexdigest(),
+                 politica=config["politica"], esfuerzo=config.get("esfuerzo"),
+                 envolver_resultados=config.get("envolver_resultados", True))
 
     # ---- 2. modelo
-    if args.simulado:
-        modelo = ModeloSimulado(AQUI / config["guion_simulado"])
-    else:
-        modelo = ModeloClaude(args.modelo or config["modelo"], limites["max_tokens_por_respuesta"])
+    try:
+        if args.simulado:
+            modelo = ModeloSimulado(RAIZ / config["guion_simulado"])
+        else:
+            modelo = ModeloClaude(nombre_modelo, limites["max_tokens_por_respuesta"], config.get("esfuerzo"))
+    except ErrorModelo as e:
+        for c in clientes.values():
+            c.cerrar()
+        traza.evento("fin", motivo=f"error del modelo: {e}", pasos=0, tokens_entrada=0,
+                     tokens_salida=0, duracion_s=0, llamadas=[], respuesta_final="")
+        traza.cerrar()
+        print(f"\nERROR: {e}")
+        return {"codigo": 2, "traza": traza.ruta, "motivo": str(e)}
 
     sistema = instrucciones
-    mensajes = [{"role": "user", "content": args.objetivo}]
+    mensajes = [{"role": "user", "content": objetivo}]
     tokens_in = tokens_out = 0
     motivo_parada = "límite de pasos alcanzado"
     respuesta_final = ""
@@ -251,9 +314,14 @@ def ejecutar(args) -> int:
     llamadas_hechas = []
 
     # ---- 3. el bucle
-    print(f"\n== Objetivo\n   {args.objetivo}\n")
+    print(f"\n== Objetivo\n   {objetivo}\n")
+    paso = 0
     for paso in range(1, limites["max_pasos"] + 1):
-        r = modelo.responder(sistema, mensajes, catalogo)
+        try:
+            r = modelo.responder(sistema, mensajes, catalogo)
+        except ErrorModelo as e:
+            motivo_parada = f"error del modelo: {e}"
+            break
         uso = r.get("usage", {})
         tokens_in += uso.get("input_tokens", 0)
         tokens_out += uso.get("output_tokens", 0)
@@ -270,8 +338,12 @@ def ejecutar(args) -> int:
 
         mensajes.append({"role": "assistant", "content": contenido})
 
-        if r.get("stop_reason") != "tool_use":
-            motivo_parada = "el modelo terminó (end_turn)"
+        stop = r.get("stop_reason")
+        if stop != "tool_use":
+            motivo_parada = {"end_turn": "el modelo terminó (end_turn)",
+                             "max_tokens": "respuesta cortada por max_tokens",
+                             "refusal": "el modelo rechazó la solicitud (refusal)"}.get(
+                                 stop, f"parada inesperada ({stop})")
             respuesta_final = texto
             break
 
@@ -326,7 +398,7 @@ def ejecutar(args) -> int:
           f"({len(denegadas)} denegadas, {len(errores)} con error)")
     print(f"   tokens           : {tokens_in} entrada + {tokens_out} salida")
     print(f"   duración         : {duracion} s")
-    print(f"   traza            : {traza.ruta.relative_to(AQUI)}")
+    print(f"   traza            : {traza.ruta}")
     if respuesta_final:
         print("\n== Respuesta final del agente\n")
         print(respuesta_final)
@@ -334,15 +406,27 @@ def ejecutar(args) -> int:
                  tokens_salida=tokens_out, duracion_s=duracion, llamadas=llamadas_hechas,
                  respuesta_final=respuesta_final)
     traza.cerrar()
-    return 0 if motivo_parada.startswith("el modelo terminó") else 1
+    codigo = 0 if motivo_parada.startswith("el modelo terminó") else 1
+    return {"codigo": codigo, "traza": traza.ruta, "motivo": motivo_parada}
 
 
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser(description="Agente de voz del cliente (clase 3)")
-    ap.add_argument("--objetivo", default=OBJETIVO_POR_DEFECTO)
-    ap.add_argument("--config", default=str(AQUI / "config.json"))
+def argumentos(lista: list[str] | None = None) -> argparse.Namespace:
+    ap = argparse.ArgumentParser(description="LESCO-Agent (adaptado del agente de la clase 3)")
+    ap.add_argument("--config", default=str(AQUI / "configs" / "demo.json"))
+    ap.add_argument("--caso", default="demo-001", help="caso_id a procesar")
+    ap.add_argument("--casos", default=None, help="archivo JSONL de casos (sobrescribe la configuración)")
+    ap.add_argument("--salidas", default=None, help="carpeta de resultados (sobrescribe la configuración)")
+    ap.add_argument("--trazas", default=None, help="carpeta de trazas (sobrescribe la configuración)")
+    ap.add_argument("--repeticion", type=int, default=None, help="número de repetición (solo se registra)")
+    ap.add_argument("--objetivo", default=None, help="sobrescribe el objetivo estándar del caso")
     ap.add_argument("--simulado", action="store_true", help="usa el guion en vez de la API")
     ap.add_argument("--auto-aprobar", action="store_true",
                     help="aprueba sin preguntar lo que la política marca como 'confirmar' (solo para pruebas)")
-    ap.add_argument("--modelo", default=None, help="sobrescribe el modelo de config.json")
-    sys.exit(ejecutar(ap.parse_args()))
+    ap.add_argument("--modelo", default=None, help="sobrescribe el modelo de la configuración")
+    return ap.parse_args(lista)
+
+
+if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.exit(ejecutar(argumentos())["codigo"])

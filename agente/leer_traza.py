@@ -19,6 +19,10 @@ from collections import Counter
 from pathlib import Path
 from statistics import mean
 
+# LESCO-Agent: la única herramienta de escritura del servidor propio (en el kit eran
+# crear_ticket y guardar_borrador_correo).
+ESCRITURAS = ("guardar_resultado",)
+
 
 def leer(ruta: Path) -> dict:
     eventos = [json.loads(l) for l in ruta.read_text(encoding="utf-8").splitlines() if l.strip()]
@@ -28,6 +32,9 @@ def leer(ruta: Path) -> dict:
     firmas = Counter(json.dumps([h["nombre"], h["argumentos"]], sort_keys=True) for h in herramientas)
     return {
         "archivo": ruta.name,
+        "configuracion": inicio.get("configuracion", "?"),
+        "caso_id": inicio.get("caso_id", "?"),
+        "repeticion": inicio.get("repeticion"),
         "modelo": inicio.get("modelo", "?"),
         "pasos": fin.get("pasos", 0),
         "motivo": fin.get("motivo", "sin evento de fin (ejecución interrumpida)"),
@@ -38,7 +45,7 @@ def leer(ruta: Path) -> dict:
         "repetidas": sum(n - 1 for n in firmas.values() if n > 1),
         "escrituras": sum(1 for h in herramientas
                           if h["decision"] == "permitir" and not h["es_error"]
-                          and h["nombre"].split("__")[-1] in ("crear_ticket", "guardar_borrador_correo")),
+                          and h["nombre"].split("__")[-1] in ESCRITURAS),
         "tokens_entrada": fin.get("tokens_entrada", 0),
         "tokens_salida": fin.get("tokens_salida", 0),
         "duracion_s": fin.get("duracion_s", 0),
@@ -47,7 +54,7 @@ def leer(ruta: Path) -> dict:
 
 
 def imprimir(r: dict) -> None:
-    print(f"\n{r['archivo']}  ·  modelo {r['modelo']}")
+    print(f"\n{r['archivo']}  ·  modelo {r['modelo']}  ·  config {r['configuracion']}  ·  caso {r['caso_id']}")
     print(f"  parada      : {r['motivo']}")
     print(f"  pasos       : {r['pasos']}   llamadas: {r['llamadas']}   "
           f"denegadas: {r['denegadas']}   errores: {r['errores']}   repetidas: {r['repetidas']}")
@@ -67,6 +74,8 @@ def imprimir(r: dict) -> None:
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
     ap.add_argument("trazas", nargs="+", type=Path)
     ap.add_argument("--csv", type=Path, help="exporta una fila por ejecución")

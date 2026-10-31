@@ -56,8 +56,11 @@ El experimento se ejecuta sobre texto fijo; el reconocimiento de voz se usa en l
 | `TODO.md` | Tareas pendientes por fase. |
 | `docs/` | Propuesta H1, referencias, datos y ética, registro de uso de IA. |
 | `data/lexicon/` | Índice del Diccionario LESCO del CENAREC (1104 entradas) y su procedencia. |
-| `mcp_server/` | Servidor MCP propio: `buscar_sena`, `validar_secuencia`, `guardar_resultado`. |
-| `agente/` | Agente y cliente MCP (en construcción). |
+| `mcp_server/` | Servidor MCP propio: `obtener_transcripcion`, `buscar_sena`, `validar_secuencia`, `guardar_resultado`. |
+| `agente/` | Agente (adaptado del kit de la clase 3), cliente MCP, configuraciones A/B/demo, ejecutor de casos y lector de trazas. |
+| `skill/SKILL.md` | Skill procedimental (solo en la configuración B). |
+| `politica/` | Políticas de permisos del experimento y de la demo, con su justificación. |
+| `eval/` | Guía de la tarea y de anotación; casos de demostración. |
 | `tests/` | Pruebas automáticas. |
 
 ## Requisitos
@@ -79,7 +82,39 @@ python mcp_server/servidor_lesco.py --salidas resultados/salidas
 Habla MCP por stdio (JSON-RPC 2.0, un mensaje por línea). El servidor valida cada argumento,
 rechaza IDs que no existen en el diccionario y nunca sobrescribe un resultado guardado.
 
-*El comando que regenera los resultados se documentará cuando exista el experimento.*
+## Agente
+
+Configure la clave de la API solo como variable de entorno (nunca en archivos del repositorio):
+
+```bash
+setx ANTHROPIC_API_KEY "sk-ant-api..."
+```
+
+Sin clave ni costo (modelo simulado, recorre el bucle completo y la política):
+
+```bash
+python agente/agente.py --config agente/configs/demo.json --simulado --caso demo-001
+```
+
+Con el modelo real (`claude-sonnet-5-5`):
+
+```bash
+python agente/agente.py --config agente/configs/B.json --caso demo-001 --casos eval/demo/casos_demo.jsonl
+```
+
+Corrida de varias configuraciones y repeticiones (reanudable):
+
+```bash
+python agente/ejecutar_casos.py --configs A B --repeticiones 3 --casos eval/casos.jsonl
+```
+
+Resumen de trazas:
+
+```bash
+python agente/leer_traza.py trazas/experimento/*/*/*.jsonl --csv resultados/metricas_trazas.csv
+```
+
+*El comando único que regenera las tablas del artículo se documentará con el experimento.*
 
 ## Autoría
 

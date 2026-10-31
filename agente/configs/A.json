@@ -1,0 +1,33 @@
+{
+  "nombre": "A",
+  "descripcion": "Línea base: instrucciones genéricas.",
+  "instrucciones": [
+    "agente/instrucciones_genericas.md"
+  ],
+  "modelo": "claude-sonnet-5-5",
+  "esfuerzo": "medium",
+  "politica": "politica/politica_experimento.json",
+  "limites": {
+    "max_pasos": 30,
+    "presupuesto_tokens": 400000,
+    "max_tokens_por_respuesta": 16000
+  },
+  "carpeta_trazas": "trazas/sueltas",
+  "carpeta_salidas": "resultados/salidas/sueltas",
+  "casos": "eval/casos.jsonl",
+  "servidores": [
+    {
+      "nombre": "lesco",
+      "comando": [
+        "python",
+        "mcp_server/servidor_lesco.py",
+        "--casos",
+        "{casos}",
+        "--salidas",
+        "{salidas}"
+      ]
+    }
+  ],
+  "guion_simulado": "agente/guion_simulado.json",
+  "envolver_resultados": true
+}

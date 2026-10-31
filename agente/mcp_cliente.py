@@ -97,9 +97,12 @@ class ClienteMCP:
         return texto, bool(r.get("isError"))
 
     def cerrar(self) -> None:
-        if self.proc and self.proc.poll() is None:
-            try:
-                self.proc.stdin.close()
-                self.proc.wait(timeout=5)
-            except (OSError, subprocess.TimeoutExpired):
-                self.proc.kill()
+        if self.proc is None:
+            return
+        try:
+            self.proc.stdin.close()
+            self.proc.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired):
+            self.proc.kill()
+            self.proc.wait()
+        self.proc.stdout.close()

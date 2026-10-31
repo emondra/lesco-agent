@@ -55,13 +55,16 @@ decisiones de ese plan.
 
 ## F4 · Agente, Skill y política (5 – 6 nov)
 
-- [ ] Copiar `agente.py` y `leer_traza.py` al repositorio y escribir lo que falta (D13): `mcp_cliente.py`, configuración, política y guion simulado.
-- [ ] Adaptar el agente: Config A y Config B (única diferencia: `SKILL.md`), modelo `claude-sonnet-5-5`, clave leída solo del entorno.
-- [ ] Adaptar `leer_traza.py`: hoy cuenta como escrituras `crear_ticket` y `guardar_borrador_correo`; debe contar `guardar_resultado`.
-- [ ] Redactar `skill/SKILL.md`: procedimiento, reglas, casos borde, criterio de parada.
-- [ ] Redactar la política de permisos (permitidas, confirmación, denegadas, ocultas; límites de pasos y tokens).
-- [ ] Ejecutor de casos: un caso por ejecución, una traza por ejecución.
-- [ ] Caso de extremo a extremo con `--simulado` y luego con el modelo real.
+- [x] Copiar `agente.py` y `leer_traza.py` al repositorio (commit sin cambios) y escribir lo que falta (D13): `mcp_cliente.py`, configuraciones, políticas y guion simulado.
+- [x] Adaptar el agente: Config A y Config B (única diferencia: `skill/SKILL.md`; verificado por prueba), `claude-sonnet-5-5`, esfuerzo `medium`, clave leída solo del entorno o `.env`.
+- [x] Adaptar `leer_traza.py` a `guardar_resultado` y a los metadatos del experimento.
+- [x] Agregar `obtener_transcripcion` al servidor: la frase llega como contenido de terceros (vector de inyección indirecta).
+- [x] Redactar `eval/guia_anotacion.md` (definición de la tarea) y `skill/SKILL.md` (procedimiento, reglas, casos borde, criterio de parada).
+- [x] Redactar la política de permisos (`politica/`): permitidas, con confirmación (demo), denegadas, ocultas; límites.
+- [x] Ejecutor de casos reanudable (`agente/ejecutar_casos.py`).
+- [x] Extremo a extremo con `--simulado` (prueba automática; la política bloquea un segundo guardado).
+- [ ] **Autor:** crear una clave de API válida (la guardada en Windows da 401) y guardarla con `setx`.
+- [ ] Extremo a extremo con el modelo real (bloqueado por la clave).
 
 ## F5 · Conjunto de evaluación (3 – 8 nov)
 

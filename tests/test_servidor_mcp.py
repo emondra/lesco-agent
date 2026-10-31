@@ -17,14 +17,20 @@ class TestServidorMCP(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.salidas = Path(tempfile.mkdtemp(prefix="lesco_salidas_"))
+        casos = cls.salidas.parent / f"{cls.salidas.name}_casos.jsonl"
+        casos.write_text(json.dumps({"caso_id": "c1", "texto": "Debe pagar en la caja.",
+                                     "referencia": ["CENAREC-296"]}, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
+        cls.casos = casos
         cls.cli = ClienteMCP("lesco", [sys.executable, "mcp_server/servidor_lesco.py",
-                                       "--salidas", str(cls.salidas)], cwd=str(RAIZ))
+                                       "--salidas", str(cls.salidas), "--casos", str(casos)], cwd=str(RAIZ))
         cls.info = cls.cli.iniciar()
 
     @classmethod
     def tearDownClass(cls):
         cls.cli.cerrar()
         shutil.rmtree(cls.salidas, ignore_errors=True)
+        cls.casos.unlink(missing_ok=True)
 
     def llamar(self, nombre, args):
         texto, es_error = self.cli.llamar(nombre, args)
@@ -36,10 +42,21 @@ class TestServidorMCP(unittest.TestCase):
 
     def test_catalogo_con_esquemas_estrictos(self):
         herramientas = {h["name"]: h for h in self.cli.listar_herramientas()}
-        self.assertEqual(set(herramientas), {"buscar_sena", "validar_secuencia", "guardar_resultado"})
+        self.assertEqual(set(herramientas), {"obtener_transcripcion", "buscar_sena",
+                                             "validar_secuencia", "guardar_resultado"})
         for h in herramientas.values():
             self.assertFalse(h["inputSchema"]["additionalProperties"])
             self.assertIn("Úsela", h["description"])
+
+    def test_transcripcion_sin_etiquetas_de_referencia(self):
+        datos, es_error = self.llamar("obtener_transcripcion", {"caso_id": "c1"})
+        self.assertFalse(es_error)
+        self.assertEqual(datos, {"caso_id": "c1", "transcripcion": "Debe pagar en la caja."})
+
+    def test_transcripcion_de_caso_inexistente(self):
+        texto, es_error = self.llamar("obtener_transcripcion", {"caso_id": "c999"})
+        self.assertTrue(es_error)
+        self.assertIn("no hay transcripción", texto)
 
     def test_buscar(self):
         datos, es_error = self.llamar("buscar_sena", {"texto": "pagar"})

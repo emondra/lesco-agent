@@ -1,0 +1,39 @@
+{
+  "descripcion": "Guion para probar el bucle, la política y la traza sin clave ni costo (caso demo-001). El último intento de guardar debe ser denegado por la política (máximo 1 escritura).",
+  "turnos": [
+    {
+      "texto": "Obtengo la transcripción del caso.",
+      "herramientas": [{"name": "lesco__obtener_transcripcion", "input": {"caso_id": "demo-001"}}]
+    },
+    {
+      "texto": "Busco cada palabra de contenido por su lema.",
+      "herramientas": [
+        {"name": "lesco__buscar_sena", "input": {"texto": "deber"}},
+        {"name": "lesco__buscar_sena", "input": {"texto": "firmar"}},
+        {"name": "lesco__buscar_sena", "input": {"texto": "factura"}},
+        {"name": "lesco__buscar_sena", "input": {"texto": "esperar"}},
+        {"name": "lesco__buscar_sena", "input": {"texto": "fila"}}
+      ]
+    },
+    {
+      "texto": "Valido la secuencia.",
+      "herramientas": [{"name": "lesco__validar_secuencia",
+                        "input": {"secuencia": ["CENAREC-296", "CENAREC-325", "CENAREC-324", "CENAREC-666", "CENAREC-318"]}}]
+    },
+    {
+      "texto": "Guardo el resultado.",
+      "herramientas": [{"name": "lesco__guardar_resultado",
+                        "input": {"caso_id": "demo-001", "texto_fuente": "Debe firmar la factura y esperar en la fila.",
+                                  "secuencia": ["CENAREC-296", "CENAREC-325", "CENAREC-324", "CENAREC-666", "CENAREC-318"]}}]
+    },
+    {
+      "texto": "Intento guardar otra vez (debe bloquearlo la política).",
+      "herramientas": [{"name": "lesco__guardar_resultado",
+                        "input": {"caso_id": "demo-001", "texto_fuente": "Debe firmar la factura y esperar en la fila.",
+                                  "secuencia": ["CENAREC-296"]}}]
+    },
+    {
+      "texto": "Secuencia guardada: DEBER FIRMAR FACTURA ESPERAR FILA."
+    }
+  ]
+}

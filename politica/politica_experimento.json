@@ -1,0 +1,19 @@
+{
+  "descripcion": "Política del experimento (configuraciones A y B, idéntica en ambas). Justificación en politica/README.md.",
+  "ocultar": ["*__admin*", "*__depurar*"],
+  "denegar": ["*__borrar*", "*__eliminar*", "*__sobrescribir*", "*__ejecutar*"],
+  "confirmar": [],
+  "permitir": [
+    "lesco__obtener_transcripcion",
+    "lesco__buscar_sena",
+    "lesco__validar_secuencia",
+    "lesco__guardar_resultado"
+  ],
+  "por_defecto": "denegar",
+  "max_llamadas_por_herramienta": {
+    "lesco__obtener_transcripcion": 2,
+    "lesco__buscar_sena": 40,
+    "lesco__validar_secuencia": 5,
+    "lesco__guardar_resultado": 1
+  }
+}
