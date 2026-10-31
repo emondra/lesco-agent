@@ -1,0 +1,241 @@
+caso_id	pos	palabra	sugerencia	etiqueta
+c001	0	Debe		
+c001	1	firmar		
+c001	2	el	OMITIR	
+c001	3	certificado		
+c002	0	Necesita		
+c002	1	pagar		
+c002	2	la	OMITIR	
+c002	3	factura		
+c002	4	hoy		
+c003	0	Espere		
+c003	1	en	OMITIR	
+c003	2	la	OMITIR	
+c003	3	fila		
+c003	4	por	OMITIR	
+c003	5	favor		
+c004	0	La	OMITIR	
+c004	1	oficina		
+c004	2	abre		
+c004	3	el	OMITIR	
+c004	4	lunes		
+c005	0	El	OMITIR	
+c005	1	horario		
+c005	2	es		
+c005	3	de	OMITIR	
+c005	4	lunes		
+c005	5	a	OMITIR	
+c005	6	viernes		
+c006	0	Escriba		
+c006	1	su	OMITIR	
+c006	2	nombre		
+c006	3	y	OMITIR	
+c006	4	apellido		
+c007	0	Traiga		
+c007	1	una	OMITIR	
+c007	2	foto		
+c008	0	Cuánto		
+c008	1	debo		
+c008	2	pagar		
+c009	0	Dónde		
+c009	1	atiende		
+c009	2	el	OMITIR	
+c009	3	director		
+c010	0	Hoy		
+c010	1	no		
+c010	2	hay		
+c010	3	intérprete		
+c011	0	Necesito		
+c011	1	hablar		
+c011	2	con		
+c011	3	un	OMITIR	
+c011	4	abogado		
+c012	0	Debe		
+c012	1	esperar		
+c012	2	quince		
+c012	3	minutos		
+c013	0	El	OMITIR	
+c013	1	banco		
+c013	2	cierra		
+c013	3	a	OMITIR	
+c013	4	las	OMITIR	
+c013	5	cuatro		
+c014	0	Puede		
+c014	1	pagar		
+c014	2	con		
+c014	3	dólares		
+c014	4	o		
+c014	5	colones		
+c015	0	Envíe		
+c015	1	el	OMITIR	
+c015	2	formulario		
+c015	3	por	OMITIR	
+c015	4	correo		
+c015	5	electrónico		
+c016	0	Gracias		
+c016	1	por	OMITIR	
+c016	2	esperar		
+c017	0	Pregunte		
+c017	1	en	OMITIR	
+c017	2	la	OMITIR	
+c017	3	ventanilla		
+c017	4	número		
+c017	5	tres		
+c018	0	El	OMITIR	
+c018	1	trámite		
+c018	2	dura		
+c018	3	dos		
+c018	4	semanas		
+c019	0	Traiga		
+c019	1	la	OMITIR	
+c019	2	cédula		
+c019	3	y	OMITIR	
+c019	4	una	OMITIR	
+c019	5	fotocopia		
+c020	0	La	OMITIR	
+c020	1	doctora		
+c020	2	lo	OMITIR	
+c020	3	atiende		
+c020	4	mañana		
+c020	5	en	OMITIR	
+c020	6	la	OMITIR	
+c020	7	mañana		
+c021	0	Su	OMITIR	
+c021	1	cita		
+c021	2	es		
+c021	3	el	OMITIR	
+c021	4	martes		
+c022	0	No		
+c022	1	tiene		
+c022	2	que	OMITIR	
+c022	3	pagar		
+c022	4	nada		
+c023	0	El	OMITIR	
+c023	1	servicio		
+c023	2	es		
+c023	3	gratis		
+c024	0	Llame		
+c024	1	por	OMITIR	
+c024	2	teléfono		
+c024	3	antes		
+c024	4	de	OMITIR	
+c024	5	venir		
+c025	0	Debe		
+c025	1	presentar		
+c025	2	el	OMITIR	
+c025	3	expediente		
+c025	4	completo		
+c026	0	Debe		
+c026	1	leer		
+c026	2	la	OMITIR	
+c026	3	carta		
+c027	0	Necesita		
+c027	1	el	OMITIR	
+c027	2	permiso		
+c027	3	del	OMITIR	
+c027	4	ministerio		
+c028	0	Puede		
+c028	1	leer		
+c028	2	la	OMITIR	
+c028	3	lista		
+c029	0	Informe		
+c029	1	al	OMITIR	
+c029	2	empleado		
+c030	0	Firme		
+c030	1	aquí		
+c030	2	por	OMITIR	
+c030	3	favor		
+c031	0	El	OMITIR	
+c031	1	empleado		
+c031	2	puede		
+c031	3	ayudar		
+c032	0	Venga		
+c032	1	el	OMITIR	
+c032	2	jueves		
+c032	3	a	OMITIR	
+c032	4	las	OMITIR	
+c032	5	ocho		
+c033	0	Tiene		
+c033	1	que	OMITIR	
+c033	2	traer		
+c033	3	dos		
+c033	4	fotos		
+c034	0	Debe		
+c034	1	aprobar		
+c034	2	el	OMITIR	
+c034	3	examen		
+c035	0	Hable		
+c035	1	despacio		
+c036	0	El	OMITIR	
+c036	1	intérprete		
+c036	2	viene		
+c036	3	el	OMITIR	
+c036	4	viernes		
+c037	0	Busque		
+c037	1	su	OMITIR	
+c037	2	expediente		
+c038	0	Necesito		
+c038	1	un	OMITIR	
+c038	2	certificado		
+c038	3	nuevo		
+c039	0	Hay		
+c039	1	un	OMITIR	
+c039	2	problema		
+c039	3	con		
+c039	4	su	OMITIR	
+c039	5	factura		
+c040	0	Puede		
+c040	1	imprimir		
+c040	2	la	OMITIR	
+c040	3	factura		
+c041	0	El	OMITIR	
+c041	1	doctor		
+c041	2	explica		
+c041	3	la	OMITIR	
+c041	4	medicina		
+c042	0	Muestre		
+c042	1	el	OMITIR	
+c042	2	recibo		
+c042	3	al	OMITIR	
+c042	4	empleado		
+c043	0	Debe		
+c043	1	cambiar		
+c043	2	el	OMITIR	
+c043	3	horario		
+c044	0	El	OMITIR	
+c044	1	hospital		
+c044	2	atiende		
+c044	3	todo		
+c044	4	el	OMITIR	
+c044	5	día		
+c045	0	Escriba		
+c045	1	un	OMITIR	
+c045	2	correo		
+c045	3	electrónico		
+c045	4	al	OMITIR	
+c045	5	director		
+c046	0	Pida		
+c046	1	ayuda		
+c046	2	al	OMITIR	
+c046	3	intérprete		
+c047	0	La	OMITIR	
+c047	1	universidad		
+c047	2	entrega		
+c047	3	el	OMITIR	
+c047	4	certificado		
+c047	5	en	OMITIR	
+c047	6	diciembre		
+c048	0	Si		
+c048	1	no		
+c048	2	puede		
+c048	3	venir		
+c048	4	el	OMITIR	
+c048	5	lunes		
+c048	6	debe		
+c048	7	avisar		
+c048	8	a	OMITIR	
+c048	9	la	OMITIR	
+c048	10	oficina		
+c048	11	antes		
+c048	12	del	OMITIR	
+c048	13	viernes		

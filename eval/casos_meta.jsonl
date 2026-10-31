@@ -1,0 +1,48 @@
+{"caso_id": "c001", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c002", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c003", "dificultad_prevista": "dificil", "motivos": ["multipalabra", "variante_sentido"]}
+{"caso_id": "c004", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c005", "dificultad_prevista": "dificil", "motivos": ["multipalabra"]}
+{"caso_id": "c006", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c007", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c008", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c009", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c010", "dificultad_prevista": "dificil", "motivos": ["multipalabra", "variante_sentido"]}
+{"caso_id": "c011", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c012", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c013", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c014", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c015", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "multipalabra"]}
+{"caso_id": "c016", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c017", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "sinonimo"]}
+{"caso_id": "c018", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "variante_sentido"]}
+{"caso_id": "c019", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "sinonimo"]}
+{"caso_id": "c020", "dificultad_prevista": "dificil", "motivos": ["multipalabra", "variante_sentido"]}
+{"caso_id": "c021", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura"]}
+{"caso_id": "c022", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c023", "dificultad_prevista": "dificil", "motivos": ["sinonimo"]}
+{"caso_id": "c024", "dificultad_prevista": "dificil", "motivos": ["multipalabra"]}
+{"caso_id": "c025", "dificultad_prevista": "dificil", "motivos": ["sinonimo", "sin_cobertura"]}
+{"caso_id": "c026", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c027", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c028", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c029", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c030", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "multipalabra"]}
+{"caso_id": "c031", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c032", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c033", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c034", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c035", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c036", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c037", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c038", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c039", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c040", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c041", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c042", "dificultad_prevista": "dificil", "motivos": ["sin_cobertura", "sinonimo"]}
+{"caso_id": "c043", "dificultad_prevista": "normal", "motivos": []}
+{"caso_id": "c044", "dificultad_prevista": "dificil", "motivos": ["multipalabra"]}
+{"caso_id": "c045", "dificultad_prevista": "dificil", "motivos": ["multipalabra"]}
+{"caso_id": "c046", "dificultad_prevista": "dificil", "motivos": ["sinonimo"]}
+{"caso_id": "c047", "dificultad_prevista": "dificil", "motivos": ["variante_sentido"]}
+{"caso_id": "c048", "dificultad_prevista": "dificil", "motivos": ["multipalabra", "sin_cobertura", "largo"]}

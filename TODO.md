@@ -72,12 +72,14 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 
 - [x] Guía de anotación v1 (`eval/guia_anotacion.md`): etiqueta por palabra; criterio de "difícil" definido antes.
 - [x] **Autor:** aprobar D15, D16 (guía de la tarea), D17 y el plan de F5 (2026-11-01).
-- [ ] Redactar 48 casos sin datos personales (≥ 40 % difíciles) y 5 casos de piloto aparte.
+- [x] Redactar 48 casos sin datos personales (25 difíciles previstos, 52 %) y 5 casos de piloto aparte.
 - [ ] **Autor:** revisar y aprobar los casos.
-- [ ] Tokenizador, plantilla con `OMITIR` prellenado y buscador de ayuda.
+- [x] Tokenizador, plantilla con `OMITIR` prellenado (240 palabras, 166 por etiquetar), buscador e instrucciones.
 - [ ] **Autor:** anotador 1 (2–3 horas estimadas).
-- [ ] Anotador 2 (`claude-opus-5-5`, prompt fijo; requiere clave válida).
-- [ ] Kappa (todas las palabras y solo contenido) y adjudicación registrada.
+- [x] Script del anotador 2 y prompt v1 (`eval/anotador_llm.py`).
+- [ ] Ejecutar el anotador 2 (requiere clave válida; después de que el autor termine).
+- [x] Script de kappa (todas las palabras y solo contenido) y lista de desacuerdos.
+- [ ] Calcular kappa y adjudicar (registro en `eval/adjudicacion.md`).
 - [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).
 
 ## F6 · Piloto y línea base (8 – 9 nov)
