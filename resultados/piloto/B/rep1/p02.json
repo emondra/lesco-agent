@@ -1,0 +1,17 @@
+{
+  "caso_id": "p02",
+  "texto_fuente": "La oficina atiende de lunes a viernes.",
+  "secuencia": [
+    "CENAREC-1685",
+    "CENAREC-98",
+    "CENAREC-604"
+  ],
+  "glosas": [
+    "OFICINA",
+    "ATENDER",
+    "LUNES-A-VIERNES"
+  ],
+  "notas": "",
+  "guardado": "2026-11-03T14:25:44",
+  "indice_lexico": "cenarec_indice.tsv"
+}

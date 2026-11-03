@@ -1,0 +1,19 @@
+{
+  "caso_id": "p03",
+  "texto_fuente": "Necesita firmar la factura hoy.",
+  "secuencia": [
+    "CENAREC-440",
+    "CENAREC-325",
+    "CENAREC-324",
+    "CENAREC-277"
+  ],
+  "glosas": [
+    "NECESITAR",
+    "FIRMAR",
+    "FACTURA",
+    "HOY"
+  ],
+  "notas": "",
+  "guardado": "2026-11-03T14:25:52",
+  "indice_lexico": "cenarec_indice.tsv"
+}

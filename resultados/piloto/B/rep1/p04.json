@@ -1,0 +1,17 @@
+{
+  "caso_id": "p04",
+  "texto_fuente": "¿Cuándo puedo pagar?",
+  "secuencia": [
+    "CENAREC-914",
+    "CENAREC-482",
+    "CENAREC-195"
+  ],
+  "glosas": [
+    "CUANDO",
+    "PODER",
+    "PAGAR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-03T14:26:15",
+  "indice_lexico": "cenarec_indice.tsv"
+}

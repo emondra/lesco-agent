@@ -64,7 +64,7 @@ decisiones de ese plan.
 - [x] Ejecutor de casos reanudable (`agente/ejecutar_casos.py`).
 - [x] Extremo a extremo con `--simulado` (prueba automática; la política bloquea un segundo guardado).
 - [ ] **Autor:** crear una clave de API válida (la guardada en Windows da 401) y guardarla con `setx`.
-- [ ] Extremo a extremo con el modelo real (bloqueado por la clave).
+- [x] Extremo a extremo con el modelo real (2026-11-03, clave del curso).
 
 ## F5 · Conjunto de evaluación (3 – 8 nov)
 
@@ -86,7 +86,7 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 
 - [x] Congelar métricas en `docs/metricas.md` (v1) antes de ejecutar.
 - [x] Puntuación y comando único (`eval/puntuar.py`, `reproducir.py`), referencia desde la adjudicación (`eval/construir_referencia.py`); probado con trazas simuladas.
-- [ ] Piloto de 5 casos (`eval/piloto/`); recalibrar el presupuesto con `leer_traza.py` (requiere clave válida).
+- [x] Piloto de 5 casos × A y B (2026-11-03): 10/10 terminaron bien; ≈ US$ 0,05 por ejecución → experimento ≈ US$ 14.
 - [ ] Ejecutar Config A × 3; guardar todas las trazas.
 
 ## F7 · Experimento y seguridad (9 – 11 nov)

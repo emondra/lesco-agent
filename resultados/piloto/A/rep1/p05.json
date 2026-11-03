@@ -1,0 +1,17 @@
+{
+  "caso_id": "p05",
+  "texto_fuente": "Traiga su pasaporte, por favor.",
+  "secuencia": [
+    "CENAREC-380",
+    "SIN_COBERTURA:pasaporte",
+    "CENAREC-1482"
+  ],
+  "glosas": [
+    "LLEVAR-TRAER",
+    "SIN_COBERTURA:pasaporte",
+    "POR-FAVOR"
+  ],
+  "notas": "\"pasaporte\" no está en el diccionario. \"su\" se omite (posesivo implícito).",
+  "guardado": "2026-11-03T14:26:23",
+  "indice_lexico": "cenarec_indice.tsv"
+}

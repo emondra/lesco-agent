@@ -288,6 +288,19 @@ El LLM anotador (D10, 40 llamadas cortas con Opus 5.5) suma menos de US$ 1.
 **Modelo elegido (D11): Sonnet 5.5 → presupuesto de referencia ≈ US$ 32.** Las cifras reales solo podrán reportarse
 desde las trazas.
 
+**Medición del piloto (2026-11-03; trazas en `trazas/piloto/`, 5 casos × A y B, 1 repetición,
+`claude-sonnet-5-5`, precios de lista):** las 10 ejecuciones terminaron por decisión del modelo, en
+5 pasos cada una. Costo medio por ejecución: **A US$ 0,038 · B US$ 0,059** (B usa ~10 000 tokens de
+entrada más por caso, por el texto de la Skill reenviado en cada paso). Duración media: A 8,4 s, B
+8,8 s. **Proyección:** 288 ejecuciones del experimento ≈ **US$ 14**; con 30 de seguridad ≈ US$ 15.
+Estas cifras son de calibración de presupuesto, no resultados del experimento.
+
+*Observación del piloto para el autor:* en los 5 casos (fáciles, sin anotar) A y B guardaron la
+misma secuencia, incluidas una expresión de varias palabras y un `SIN_COBERTURA`. Las descripciones
+de las herramientas del servidor, que son iguales en A y B, ya transmiten parte del procedimiento.
+Es posible que la diferencia entre A y B en el conjunto de evaluación sea pequeña; un resultado nulo
+bien medido es reportable según la especificación.
+
 **Revisión tras F4 (estimación, no medición):** el agente hace una búsqueda por palabra y cada paso
 reenvía la conversación, así que el supuesto de 20 000 tokens de entrada por caso probablemente se
 quede corto. Si fueran ~100 000, el experimento con Sonnet 5.5 costaría del orden de US$ 70–100. El

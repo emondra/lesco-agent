@@ -1,0 +1,17 @@
+{
+  "caso_id": "p01",
+  "texto_fuente": "Debe traer el expediente.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-380",
+    "CENAREC-1693"
+  ],
+  "glosas": [
+    "DEBER",
+    "LLEVAR-TRAER",
+    "EXPEDIENTE"
+  ],
+  "notas": "",
+  "guardado": "2026-11-03T14:25:16",
+  "indice_lexico": "cenarec_indice.tsv"
+}
