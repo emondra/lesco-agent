@@ -90,6 +90,13 @@ Configure la clave de la API solo como variable de entorno (nunca en archivos de
 setx ANTHROPIC_API_KEY "sk-ant-api..."
 ```
 
+Si la clave es de organización y no está asociada a un workspace (la API responde
+*"not scoped to a workspace"*), configure también el ID del workspace:
+
+```bash
+setx ANTHROPIC_WORKSPACE_ID "wrkspc_..."
+```
+
 Sin clave ni costo (modelo simulado, recorre el bucle completo y la política):
 
 ```bash

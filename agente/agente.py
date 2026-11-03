@@ -61,6 +61,22 @@ def cargar_clave() -> str | None:
     return None
 
 
+def cabeceras_api(clave: str) -> dict:
+    """Cabeceras de la API. Las claves de organización sin workspace necesitan además
+    anthropic-workspace-id, que se lee de ANTHROPIC_WORKSPACE_ID (variable o .env)."""
+    cabeceras = {"x-api-key": clave, "anthropic-version": "2023-06-01", "content-type": "application/json"}
+    workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+    env = RAIZ / ".env"
+    if not workspace and env.exists():
+        for linea in env.read_text(encoding="utf-8").splitlines():
+            nombre, _, valor = linea.partition("=")
+            if nombre.strip() == "ANTHROPIC_WORKSPACE_ID" and valor.strip():
+                workspace = valor.strip().strip('"').strip("'")
+    if workspace:
+        cabeceras["anthropic-workspace-id"] = workspace
+    return cabeceras
+
+
 class ErrorModelo(Exception):
     pass
 
@@ -129,11 +145,7 @@ class ModeloClaude:
             datos["output_config"] = {"effort": self.esfuerzo}
         cuerpo = json.dumps(datos).encode("utf-8")
         for intento in range(self.REINTENTOS + 1):
-            req = urllib.request.Request(self.URL, data=cuerpo, method="POST", headers={
-                "x-api-key": self.clave,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            })
+            req = urllib.request.Request(self.URL, data=cuerpo, method="POST", headers=cabeceras_api(self.clave))
             try:
                 with urllib.request.urlopen(req, timeout=300) as r:
                     return json.loads(r.read().decode("utf-8"))

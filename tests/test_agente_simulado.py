@@ -57,6 +57,19 @@ class TestAgenteSimulado(unittest.TestCase):
         self.assertEqual(sorted(k for k in a if a[k] != b[k]), ["descripcion", "instrucciones", "nombre"])
         self.assertEqual(b["instrucciones"][:len(a["instrucciones"])], a["instrucciones"])
 
+    def test_cabecera_de_workspace_opcional(self):
+        import os
+        original = os.environ.pop("ANTHROPIC_WORKSPACE_ID", None)
+        try:
+            if not (RAIZ / ".env").exists():
+                self.assertNotIn("anthropic-workspace-id", agente.cabeceras_api("x"))
+            os.environ["ANTHROPIC_WORKSPACE_ID"] = "wrkspc_prueba"
+            self.assertEqual(agente.cabeceras_api("x")["anthropic-workspace-id"], "wrkspc_prueba")
+        finally:
+            os.environ.pop("ANTHROPIC_WORKSPACE_ID", None)
+            if original is not None:
+                os.environ["ANTHROPIC_WORKSPACE_ID"] = original
+
     def test_sin_clave_termina_con_traza(self):
         args = agente.argumentos(["--config", str(RAIZ / "agente" / "configs" / "A.json"),
                                   "--caso", "demo-001", "--casos", str(RAIZ / "eval" / "demo" / "casos_demo.jsonl"),

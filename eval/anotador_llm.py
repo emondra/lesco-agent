@@ -30,7 +30,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "agente"))
 sys.path.insert(0, str(RAIZ / "eval"))
 
-from agente import cargar_clave  # noqa: E402
+from agente import cabeceras_api, cargar_clave  # noqa: E402
 from tokenizar import ETIQUETAS_VALIDAS, escribir_tsv, leer_tsv  # noqa: E402
 
 URL = "https://api.anthropic.com/v1/messages"
@@ -101,8 +101,7 @@ def pedir(clave: str, sistema: str, mensaje: str, modelo: str) -> dict:
         "output_config": {"effort": "high", "format": {"type": "json_schema", "schema": ESQUEMA}},
     }).encode("utf-8")
     for intento in range(5):
-        req = urllib.request.Request(URL, data=cuerpo, method="POST", headers={
-            "x-api-key": clave, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+        req = urllib.request.Request(URL, data=cuerpo, method="POST", headers=cabeceras_api(clave))
         try:
             with urllib.request.urlopen(req, timeout=300) as r:
                 return json.loads(r.read().decode("utf-8"))
