@@ -12,7 +12,7 @@ registro alimenta la declaración de uso de IA del artículo.
 | 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Presentar los 48 textos del conjunto de evaluación para su revisión, en seis grupos de ocho, y validar técnicamente el anotador 2 con un script que solo muestra cifras. | La aceptación de los 48 textos sin cambios se documentó después en `TODO.md`. Las continuaciones entre grupos constan solo en la sesión y no son autorizaciones independientes verificadas. La validación del anotador 2 se describe en la sección "Anotador 2". |
 | 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Etapas de integridad 1 y 2: vinculación del servidor MCP y del agente al caso (D18), validación documental antes de puntuar (D19), pruebas automatizadas, instrumento de evidencia y documentación técnica. | Ver la sección "Etapas de integridad 1 y 2" más abajo. |
 | 2026-11-14 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Diseñar, escribir y revisar el validador revisado del anotador 2 (`eval/validar_anotador2.py`) y sus 28 pruebas sintéticas (`tests/test_validar_anotador2.py`). Ejecutar esas pruebas y la suite completa, y registrar la suite como evidencia. | El autor aprobó, corrigió o rechazó cada propuesta, escritura y ejecución durante la sesión. Eso consta solo en su transcripción y no es un registro independiente. Resultados: 28/28 y 125/125, con datos sintéticos y modelo simulado. Registro `20261114-000942_suite-completa-f5-validador`: VERIFICADA y CONFORME, en `PENDIENTE_REVISION_HUMANA`. Ver la sección "Anotador 2". |
-| 2026-11-14 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Corrección D19: detectar que `eval/puntuar.py` puntuaba ejecuciones con fallo técnico, proponer y escribir la corrección y 8 pruebas sintéticas, ejecutar la suite completa, registrarla como evidencia y actualizar `TODO.md`. | Autorización individual del autor para cada paso de corrección, pruebas, evidencia, commit y documentación, según consta solo en la transcripción de la sesión. 133/133 con modelo simulado y datos sintéticos. Registro `20261114-080936_suite-completa-d19`: VERIFICADA y CONFORME, en `PENDIENTE_REVISION_HUMANA`. Commit local `230d580`. Ver la sección "Corrección D19". |
+| 2026-11-14 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Corrección D19: detectar que `eval/puntuar.py` puntuaba ejecuciones con fallo técnico, proponer y escribir la corrección y 8 pruebas sintéticas, ejecutar la suite completa, registrarla como evidencia y actualizar `TODO.md`. | Autorización individual del autor para cada paso de corrección, pruebas, evidencia, commit y documentación, según consta solo en la transcripción de la sesión. 133/133 con modelo simulado y datos sintéticos. Registro `20261114-080936_suite-completa-d19`: VERIFICADA y CONFORME, en `PENDIENTE_REVISION_HUMANA`. Commit `230d580`, publicado en `origin/main`. Ver la sección "Corrección D19". |
 
 ## Usos previstos (se registrarán al ocurrir)
 
@@ -148,8 +148,8 @@ que el autor lo aclare.
   Durante la validación no se mostró ninguna etiqueta, palabra ni respuesta.
 - **Reproducibilidad de la validación:** el SHA-256 del script temporal histórico queda registrado.
   Ese script no se versiona y la validación real del 2026-11-13 sigue atribuida a él.
-- **Validador revisado (2026-11-14):** `eval/validar_anotador2.py` está en el commit local `d82df69`,
-  pendiente de push. Es una versión revisada del script temporal y **no** lo sustituye.
+- **Validador revisado (2026-11-14):** `eval/validar_anotador2.py` está en el commit `d82df69`,
+  publicado en `origin/main`. Es una versión revisada del script temporal y **no** lo sustituye.
   - **Autoría:** lo escribió Claude Code. El autor revisó y aprobó en la sesión el diseño, cada
     corrección, cada escritura y cada ejecución.
   - **Selección:** conserva la regla básica de `eval/anotador_llm.py` (la última respuesta sin
@@ -210,7 +210,9 @@ independiente.
     (`verificacion_posterior`, OK, CONFORME);
   - `verificar` dio integridad criptográfica VERIFICADA en el original y en la candidata, y los dos
     sellos coinciden con `evidencia/INDICE.md`. La publicación sigue en `PENDIENTE_REVISION_HUMANA`;
-  - commit local `230d580`, sin publicar.
+  - commit `230d580`, publicado en `origin/main` el 2026-11-14 junto con `d82df69` y `592dd74`.
+    El push lo autorizó el autor tras una auditoría de privacidad de solo lectura de los 8 archivos
+    publicados. La evidencia de `evidencia/privado/` sigue sin publicar.
 - **Privacidad:**
   - la traza del 401 solo se inspeccionó con cuatro resultados agregados, sin mostrar el motivo, el
     identificador de solicitud ni credenciales;

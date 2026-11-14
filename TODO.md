@@ -108,7 +108,7 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
     Validador: script temporal histórico que solo muestra cifras, con SHA-256
     `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`. Ese script no se
     versiona y la validación real del 2026-11-13 sigue atribuida a él. Una versión revisada,
-    `eval/validar_anotador2.py`, está en el commit local `d82df69`, pendiente de push (ver la tarea
+    `eval/validar_anotador2.py`, está en el commit `d82df69`, publicado en `origin/main` (ver la tarea
     siguiente). Aun así, la validación no se podrá reproducir solo con el repositorio público,
     porque sus entradas están ignoradas por git.
   - **Alcance:** es completitud técnica. **No** evalúa la calidad lingüística de las etiquetas; eso lo
@@ -118,7 +118,7 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
   - Hasta esta validación constaba como "ejecución parcial o validación pendiente".
 - [x] Validador revisado del anotador 2 (`eval/validar_anotador2.py`) y 28 pruebas sintéticas
       (`tests/test_validar_anotador2.py`), implementados y probados el 2026-11-14. Incorporados en el
-      commit local `d82df69`, **pendiente de push**.
+      commit `d82df69`, publicado en `origin/main` el 2026-11-14.
   - Solo lee y solo imprime cifras. Códigos de salida: 0 = válido, 1 = incompleto o inválido,
     2 = error de lectura.
   - Conserva la regla básica de selección de `eval/anotador_llm.py` (la última respuesta sin
@@ -192,7 +192,7 @@ Detalle en `evidencia/etapa1_servidor_mcp.md`, `evidencia/etapa2_agente.md` y PL
     lingüístico incorrecto, o que alcanza el límite de pasos, se sigue puntuando. Las fórmulas de
     `docs/metricas.md` v1 no cambian.
   - Pruebas: 8 sintéticas nuevas; suite completa **133/133** con el modelo simulado y datos
-    sintéticos. Commit local `230d580` (sin publicar).
+    sintéticos. Commit `230d580`, publicado en `origin/main` el 2026-11-14.
   - Evidencia: `20261114-080936_suite-completa-d19` (`verificacion_posterior`, OK, CONFORME,
     integridad criptográfica verificada), en **PENDIENTE_REVISION_HUMANA**.
   - Limitación residual, no resuelta y no bloqueante: `ultima_traza` elige la traza más reciente sin
