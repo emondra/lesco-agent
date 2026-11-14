@@ -364,14 +364,17 @@ anotador 2 con el índice completo en el prompt costaría ~US$ 5 (48 casos × ~2
 
 | Nivel | Qué es | Estado |
 |---|---|---|
-| 1. Pruebas automatizadas con modelo simulado o datos sintéticos | Comportamiento **del código**: servidor, agente, política, traza, evaluación y reproducción | **97/97** en el registro E2-5 (`20261113-201818_suite-completa-e25`) |
+| 1. Pruebas automatizadas con modelo simulado o datos sintéticos | Comportamiento **del código**: servidor, agente, política, traza, evaluación, reproducción y validador del anotador 2 | **97/97** en el registro E2-5 (`20261113-201818_suite-completa-e25`). **125/125** en el registro F5 (`20261114-000942_suite-completa-f5-validador`), que añade las 28 pruebas del validador del anotador 2 |
 | 2. Experimento con el modelo real (A×3 y B×3) y los 5 ataques (F7) | Efecto de la Skill y comportamiento real del modelo | **No ejecutado.** Requiere completar F5 (anotador 1, kappa, adjudicación y congelamiento) |
 | 3. Afirmaciones científicas del artículo | Lo que respalde el nivel 2 (y el nivel 1 para describir el sistema) | **Ninguna** sobre la efectividad de la Skill ni sobre la resistencia a la inyección |
 
 - **Registros de la suite completa** (no se suman: cada uno incluye al anterior):
   - D3b (`20261113-191307_suite-completa-linea-base`): 55 pruebas;
   - E2-4 (`20261113-194941_suite-completa-etapa2`): 63;
-  - E2-5: 97.
+  - E2-5: 97;
+  - F5 (`20261114-000942_suite-completa-f5-validador`, 2026-11-14): 125 = 97 + 28 de
+    `tests/test_validar_anotador2.py`. Integridad VERIFICADA y CONFORME. Está en
+    `PENDIENTE_REVISION_HUMANA`, como los anteriores.
 - **Código publicado:** commit `e254f68` (2026-11-13). Corresponde al código registrado en E2-5, salvo
   `.gitignore` (30 de 31 archivos coinciden por SHA-256 normalizado a LF; la diferencia es posterior y
   no ejecutable).

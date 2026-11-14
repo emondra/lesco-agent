@@ -11,6 +11,7 @@ registro alimenta la declaración de uso de IA del artículo.
 | 2026-11-03 | `eval/anotador_llm.py` con la API de Claude (modelo declarado en las respuestas: `claude-opus-5-5`) | Anotador 2 (D10): etiquetar las 240 palabras de los 48 casos con la guía v1, el índice del CENAREC y el prompt `eval/prompts/anotador2_v1.md`. | Validación técnica agregada el 2026-11-13. La calidad lingüística queda pendiente del kappa y la adjudicación. Ver la sección "Anotador 2". |
 | 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Presentar los 48 textos del conjunto de evaluación para su revisión, en seis grupos de ocho, y validar técnicamente el anotador 2 con un script que solo muestra cifras. | La aceptación de los 48 textos sin cambios se documentó después en `TODO.md`. Las continuaciones entre grupos constan solo en la sesión y no son autorizaciones independientes verificadas. La validación del anotador 2 se describe en la sección "Anotador 2". |
 | 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Etapas de integridad 1 y 2: vinculación del servidor MCP y del agente al caso (D18), validación documental antes de puntuar (D19), pruebas automatizadas, instrumento de evidencia y documentación técnica. | Ver la sección "Etapas de integridad 1 y 2" más abajo. |
+| 2026-11-14 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Diseñar, escribir y revisar el validador revisado del anotador 2 (`eval/validar_anotador2.py`) y sus 28 pruebas sintéticas (`tests/test_validar_anotador2.py`). Ejecutar esas pruebas y la suite completa, y registrar la suite como evidencia. | El autor aprobó, corrigió o rechazó cada propuesta, escritura y ejecución durante la sesión. Eso consta solo en su transcripción y no es un registro independiente. Resultados: 28/28 y 125/125, con datos sintéticos y modelo simulado. Registro `20261114-000942_suite-completa-f5-validador`: VERIFICADA y CONFORME, en `PENDIENTE_REVISION_HUMANA`. Ver la sección "Anotador 2". |
 
 ## Usos previstos (se registrarán al ocurrir)
 
@@ -75,7 +76,7 @@ Las ejecutó Claude Code, la misma herramienta que propuso los cambios, con auto
 
 **a) Ejecución de pruebas.** Pruebas `unittest` con el modelo **simulado** y datos sintéticos.
 Las ejecuciones registradas, con su salida original, están en `evidencia/INDICE.md`. El último
-registro, E2-5, dio **97/97**. Hubo además ejecuciones de control de desarrollo que no se registraron
+registro de estas etapas, E2-5, dio **97/97**. Hubo además ejecuciones de control de desarrollo que no se registraron
 como evidencia.
 
 **b) Verificaciones técnicas de integridad.**
@@ -144,13 +145,29 @@ que el autor lo aclare.
   - el SHA-256 del prompt es igual al vigente en los 48 registros.
 
   Durante la validación no se mostró ninguna etiqueta, palabra ni respuesta.
-- **Reproducibilidad de la validación:** el SHA-256 del script queda registrado, pero el script
-  **todavía no está versionado**. Por eso la validación **no** se puede reproducir solo con el
-  repositorio público. Además, los archivos del anotador 2 están ignorados por git y no se publican.
+- **Reproducibilidad de la validación:** el SHA-256 del script temporal histórico queda registrado.
+  Ese script no se versiona y la validación real del 2026-11-13 sigue atribuida a él.
+- **Validador revisado (2026-11-14):** `eval/validar_anotador2.py` se incorporará al repositorio en el
+  próximo commit. Es una versión revisada del script temporal y **no** lo sustituye.
+  - **Autoría:** lo escribió Claude Code. El autor revisó y aprobó en la sesión el diseño, cada
+    corrección, cada escritura y cada ejecución.
+  - **Selección:** conserva la regla básica de `eval/anotador_llm.py` (la última respuesta sin
+    problemas de cada caso) e incorpora verificaciones adicionales: vigencia del prompt, ausencia de
+    duplicados vigentes y formato estricto del TSV. **No** es equivalente en todo a `eval/anotador_llm.py`.
+  - **Salida:** solo lee y solo imprime cifras y metadatos saneados. Códigos de salida: 0 = válido,
+    1 = incompleto o inválido, 2 = error de lectura.
+  - **Pruebas:** 28/28 sintéticas (`tests/test_validar_anotador2.py`) y 125/125 en la suite completa,
+    registrada como `20261114-000942_suite-completa-f5-validador`. Integridad VERIFICADA y CONFORME;
+    el registro sigue en `PENDIENTE_REVISION_HUMANA`.
+  - **Todavía no se ha ejecutado sobre los archivos reales del anotador 2.**
+  - Aunque se versione, la validación **no** se podrá reproducir solo con el repositorio público,
+    porque los archivos del anotador 2 están ignorados por git y no se publican.
 - **Alcance:**
-  - es **completitud técnica**: la calidad lingüística de las etiquetas **no** se ha evaluado; la
-    medirán el kappa frente al anotador 1 y la adjudicación;
+  - es **completitud técnica**: la calidad lingüística todavía no ha sido evaluada mediante
+    adjudicación, y el acuerdo entre anotadores está pendiente de medirse mediante Cohen's kappa;
   - el anotador 2 se ejecutó **antes** que el anotador 1, lo que es una desviación del orden previsto.
     Esa secuencia, por sí sola, no demuestra la independencia.
+    La independencia deberá justificarse mediante el protocolo y la trazabilidad del proceso, no
+    únicamente mediante el valor de kappa.
 - **Archivos:** `eval/anotaciones/anotador2.tsv` y `anotador2_respuestas.jsonl` están ignorados por
   git y no se publican.

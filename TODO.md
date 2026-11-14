@@ -105,14 +105,39 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
     - el SHA-256 del prompt de los 48 registros coincide con el del prompt vigente;
     - modelo declarado en las respuestas de la API: `claude-opus-5-5`.
 
-    Validador: script temporal que solo muestra cifras, con SHA-256
-    `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`. Todavía no está
-    versionado, así que la validación no se puede reproducir solo con el repositorio público.
+    Validador: script temporal histórico que solo muestra cifras, con SHA-256
+    `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`. Ese script no se
+    versiona y la validación real del 2026-11-13 sigue atribuida a él. Una versión revisada,
+    `eval/validar_anotador2.py`, se incorporará al repositorio en el próximo commit (ver la tarea
+    siguiente). Aun así, la validación no se podrá reproducir solo con el repositorio público,
+    porque sus entradas están ignoradas por git.
   - **Alcance:** es completitud técnica. **No** evalúa la calidad lingüística de las etiquetas; eso lo
     hacen el kappa y la adjudicación.
   - **Desviación de orden:** se ejecutó antes del anotador 1, no "después de que el autor termine" como
     se preveía. Esa secuencia, por sí sola, no demuestra la independencia.
   - Hasta esta validación constaba como "ejecución parcial o validación pendiente".
+- [x] Validador revisado del anotador 2 (`eval/validar_anotador2.py`) y 28 pruebas sintéticas
+      (`tests/test_validar_anotador2.py`), implementados y probados el 2026-11-14. **Falta el
+      commit:** se incorporarán al repositorio en el próximo.
+  - Solo lee y solo imprime cifras. Códigos de salida: 0 = válido, 1 = incompleto o inválido,
+    2 = error de lectura.
+  - Conserva la regla básica de selección de `eval/anotador_llm.py` (la última respuesta sin
+    problemas de cada caso) e incorpora verificaciones adicionales:
+    - vigencia del prompt;
+    - ausencia de duplicados vigentes;
+    - formato estricto del TSV.
+
+    **No** es equivalente en todo a `eval/anotador_llm.py`.
+  - Pruebas: **28/28** sintéticas aprobadas y **125/125** en la suite completa, registrada como
+    `20261114-000942_suite-completa-f5-validador`. Integridad VERIFICADA y CONFORME, pero el registro
+    sigue en `PENDIENTE_REVISION_HUMANA`.
+  - **Todavía no se ha ejecutado sobre los archivos reales del anotador 2.** Las pruebas usan solo
+    datos sintéticos.
+  - La calidad lingüística todavía no ha sido evaluada mediante adjudicación, y el acuerdo entre
+    anotadores está pendiente de medirse mediante Cohen's kappa. La independencia deberá justificarse
+    mediante el protocolo y la trazabilidad del proceso, no únicamente mediante el valor de kappa.
+- [ ] Opcional: ejecutar `eval/validar_anotador2.py` sobre los archivos reales, mostrando solo
+      cifras, para enlazarlo con la validación del 2026-11-13.
 - [x] Script de kappa (todas las palabras y solo contenido) y lista de desacuerdos.
 - [ ] Calcular kappa y adjudicar (registro en `eval/adjudicacion.md`).
 - [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).
