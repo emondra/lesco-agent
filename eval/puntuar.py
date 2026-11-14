@@ -33,6 +33,10 @@ class ErrorVinculacion(Exception):
 # Mismo formato de caso_id que agente/agente.py y mcp_server/servidor_lesco.py, aplicado con fullmatch.
 PATRON_CASO = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,39}")
 CAMPOS_HERRAMIENTA = {"nombre": str, "decision": str, "argumentos": dict, "es_error": bool}
+# Prefijos con que agente/agente.py cierra una ejecución que no llegó a completarse por un fallo
+# técnico (API, autenticación, red o servidor MCP). Son los mismos que usa
+# agente/ejecutar_casos.py:ya_terminado para reintentarla. No son errores lingüísticos del agente.
+PREFIJOS_FALLO_TECNICO = ("error del modelo", "error al conectar")
 
 
 def _breve(valor) -> str:
@@ -43,6 +47,27 @@ def _breve(valor) -> str:
     return "'identificador inválido'"
 
 
+def problemas_de_cierre(eventos: list[dict]) -> list[str]:
+    """La ejecución terminó y su final es puntuable: hay un único evento 'fin', es el último, su
+    'motivo' es texto no vacío y no indica un fallo técnico. Los mensajes nunca incluyen el motivo
+    (puede contener respuestas de la API o identificadores de solicitud). Lista vacía = puntuable.
+    Un final normal con resultado lingüístico incorrecto, o un límite de pasos, sigue siendo puntuable."""
+    fines = [n for n, e in enumerate(eventos) if e["tipo"] == "fin"]
+    if not fines:
+        return ["la traza no tiene evento 'fin' (ejecución interrumpida o incompleta)"]
+    if len(fines) > 1:
+        return [f"la traza tiene {len(fines)} eventos 'fin'"]
+    if fines[0] != len(eventos) - 1:
+        return ["el evento 'fin' no es el último de la traza"]
+    motivo = eventos[-1].get("motivo")
+    if not isinstance(motivo, str) or not motivo.strip():
+        return ["el evento 'fin' no tiene un 'motivo' de texto"]
+    if motivo.startswith(PREFIJOS_FALLO_TECNICO):
+        return ["la ejecución terminó por un fallo técnico (modelo, autenticación o conexión); "
+                "no es puntuable"]
+    return []
+
+
 def problemas_de_validez(ruta_traza: Path, caso: str, archivo: Path) -> list[str]:
     """Consistencia documental entre la traza de una ejecución y su resultado, antes de puntuarla.
 
@@ -51,6 +76,8 @@ def problemas_de_validez(ruta_traza: Path, caso: str, archivo: Path) -> list[str
     evidencia y de git):
     0. la traza se puede leer: cada línea es un objeto JSON con 'tipo', y los eventos 'herramienta'
        tienen los campos que usa agente/leer_traza.py con su tipo;
+    0b. la ejecución terminó con un único evento 'fin' final, con 'motivo' de texto y sin fallo
+        técnico (problemas_de_cierre);
     1. la traza tiene evento 'inicio' de ese caso;
     2. todos los servidores MCP registrados declaran vinculación a ese caso (campo 'servidores');
     3. ningún guardar_resultado exitoso de la traza apunta a otro caso;
@@ -85,6 +112,9 @@ def problemas_de_validez(ruta_traza: Path, caso: str, archivo: Path) -> list[str
         eventos.append(evento)
     if problemas:
         return problemas                      # una traza ilegible no permite comprobar nada más
+    cierre = problemas_de_cierre(eventos)
+    if cierre:
+        return cierre                         # sin un final puntuable no se comprueba nada más
     inicio = next((e for e in eventos if e.get("tipo") == "inicio"), None)
     if inicio is None:
         return ["la traza no tiene evento 'inicio' (la ejecución no llegó a arrancar)"]

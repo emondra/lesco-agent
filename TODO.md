@@ -178,6 +178,13 @@ Detalle en `evidencia/etapa1_servidor_mcp.md`, `evidencia/etapa2_agente.md` y PL
       publican.
 - [ ] Servidor MCP: pasar `PATRON_CASO` de `match` a `fullmatch`. Hoy acepta un salto de línea final
       sin `--caso` (PLAN §8, abierto 5).
+- [ ] **BLOQUEANTE antes de A×3 y B×3 (D19, hallazgo del 2026-11-14):** `eval/puntuar.py` da por
+      consistente una traza que termina por "error del modelo" (p. ej. HTTP 401) o "error al conectar",
+      o que no tiene evento `fin`, y la puntuaría como fallo del agente. Una ejecución con error de
+      autenticación o de conexión no debe puntuarse como error lingüístico. Además, `ultima_traza`
+      elige la traza más reciente sin informar de los intentos anteriores.
+  - Origen: prueba de 1 caso (A/c001/rep1) terminada en HTTP 401, sin consumo de créditos. Su traza
+    se conserva en `trazas/experimento/A/rep1/` hasta decidir su destino.
 - [ ] Verificación en un clon limpio, y si es posible por otra persona (PLAN §8, abierto 6; ver también
       F10).
 - [ ] Opcional: manifiesto de ejecución con configuraciones y repeticiones junto a las trazas (PLAN §8,

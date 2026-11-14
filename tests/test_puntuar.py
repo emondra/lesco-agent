@@ -119,7 +119,8 @@ class TestValidezDeEjecuciones(unittest.TestCase):
     def vinculado(caso="s1"):
         return [{"nombre": "lesco", "version": "0.2.0", "caso_vinculado": caso}]
 
-    def traza(self, caso="s1", servidores="vinculado", guardados=(), con_inicio=True, config="A", rep="rep1"):
+    def traza(self, caso="s1", servidores="vinculado", guardados=(), con_inicio=True, config="A", rep="rep1",
+              motivo="el modelo terminó (end_turn)", con_fin=True, fecha="20260101_000000_000000"):
         carpeta = self.tmp / "trazas" / "x" / config / rep
         carpeta.mkdir(parents=True, exist_ok=True)
         eventos = []
@@ -135,10 +136,11 @@ class TestValidezDeEjecuciones(unittest.TestCase):
             eventos.append({"tipo": "herramienta", "paso": paso, "nombre": "lesco__guardar_resultado",
                             "argumentos": {"caso_id": destino}, "decision": "permitir", "razon": "",
                             "es_error": False, "salida": "{}"})
-        eventos.append({"tipo": "fin", "motivo": "el modelo terminó (end_turn)", "pasos": 1,
-                        "tokens_entrada": 0, "tokens_salida": 0, "duracion_s": 0, "llamadas": [],
-                        "respuesta_final": ""})
-        (carpeta / f"{config}_{caso}_20260101_000000_000000.jsonl").write_text(
+        if con_fin:
+            eventos.append({"tipo": "fin", "motivo": motivo, "pasos": 1,
+                            "tokens_entrada": 0, "tokens_salida": 0, "duracion_s": 0, "llamadas": [],
+                            "respuesta_final": ""})
+        (carpeta / f"{config}_{caso}_{fecha}.jsonl").write_text(
             "".join(json.dumps(e, ensure_ascii=False) + "\n" for e in eventos), encoding="utf-8")
 
     def resultado(self, caso="s1", declarado=None, config="A", rep="rep1"):
@@ -390,6 +392,70 @@ class TestValidezDeEjecuciones(unittest.TestCase):
         self.assertEqual(codigo, 3)
         self.assertFalse(tablas.exists())
         self.assertIn("JSON mal formado en la línea", salida.getvalue())
+
+    # ---- D19 (2026-11-14): fallos técnicos y cierre de la ejecución
+    def test_http_401_es_invalida_y_no_expone_el_motivo(self):
+        self.traza(motivo='error del modelo: Error de la API (401): {"type":"error",'
+                          '"error":{"type":"authentication_error","message":"invalid x-api-key"},'
+                          '"request_id":"req_sintetico"}')
+        with self.assertRaises(ErrorVinculacion) as e:
+            evaluar("x", self.REF, raiz=self.tmp)
+        msg = "; ".join(e.exception.args[0])
+        self.assertIn("fallo técnico", msg)
+        for privado in ("invalid x-api-key", "req_sintetico", "401"):
+            self.assertNotIn(privado, msg)
+
+    def test_error_de_conexion_es_invalida(self):
+        for motivo in ("error del modelo: No se pudo conectar con la API: sintético",
+                       "error del modelo: reintentos agotados",
+                       "error al conectar: servidor MCP sin vincular al caso: sintético"):
+            with self.subTest(motivo=motivo):
+                self.traza(motivo=motivo)
+                self.rechaza("fallo técnico")
+
+    def test_ejecucion_valida_incorrecta_se_puntua(self):
+        self.traza(guardados=("s1",))
+        self.resultado_crudo(json.dumps({"caso_id": "s1", "secuencia": ["CENAREC-2"]}))
+        (fila,) = evaluar("x", self.REF, raiz=self.tmp)
+        self.assertEqual((fila["exacta"], fila["f1"], fila["guardado"]), (0.0, 0.0, 1.0))
+
+    def test_ejecucion_valida_correcta_se_puntua(self):
+        self.traza(guardados=("s1",))
+        self.resultado()
+        (fila,) = evaluar("x", self.REF, raiz=self.tmp)
+        self.assertEqual((fila["exacta"], fila["f1"], fila["guardado"]), (1.0, 1.0, 1.0))
+
+    def test_http_401_seguido_de_ejecucion_valida_puntua_la_valida(self):
+        # Reproduce A/c001: primero un 401 sin guardado; después, el reintento válido.
+        self.traza(motivo="error del modelo: Error de la API (401): sintético",
+                   fecha="20260101_000000_000000")
+        self.traza(guardados=("s1",), fecha="20260101_000500_000000")
+        self.resultado()
+        (fila,) = evaluar("x", self.REF, raiz=self.tmp)
+        self.assertEqual((fila["exacta"], fila["guardado"]), (1.0, 1.0))
+
+    def test_rechaza_traza_sin_evento_fin(self):
+        self.traza(guardados=("s1",), con_fin=False)
+        self.resultado()
+        self.rechaza("no tiene evento 'fin'")
+
+    def test_rechaza_evento_fin_malformado(self):
+        for motivo in (None, 42, "", "   "):
+            with self.subTest(motivo=motivo):
+                self.traza(motivo=motivo)
+                self.rechaza("no tiene un 'motivo' de texto")
+        self.traza(guardados=("s1",)); self.resultado()
+        self.anexar_a_traza('{"tipo": "aviso"}')
+        self.rechaza("no es el último")
+        self.traza(guardados=("s1",))
+        self.anexar_a_traza('{"tipo": "fin", "motivo": "el modelo terminó (end_turn)"}')
+        self.rechaza("2 eventos 'fin'")
+
+    def test_limite_de_pasos_sin_guardado_sigue_siendo_puntuable(self):
+        # Un fallo del agente (no técnico) se puntúa como tal: no se excluye.
+        self.traza(motivo="límite de pasos alcanzado")
+        (fila,) = evaluar("x", self.REF, raiz=self.tmp)
+        self.assertEqual((fila["exacta"], fila["guardado"]), (0.0, 0.0))
 
 
 if __name__ == "__main__":
