@@ -6,6 +6,7 @@
 > **Los registros originales están en `evidencia/privado/`, que no está versionada ni publicada.
 > Divulgar cualquier evidencia requiere revisión humana y aprobación explícita del autor**
 > (estado actual: PENDIENTE_REVISION_HUMANA).
+> **Adenda posterior (2026-11-13):** publicación del commit `e254f68`. Ver el final del documento.
 
 ## 1. Objetivo y alcance
 
@@ -206,7 +207,8 @@ VERIFICADA y operativa CONFORME, con 0 discrepancias en el SHA-256 independiente
 - **Un solo entorno y sin verificación independiente:** Windows-11-10.0.22631-SP0, CPython 3.12.10,
   una máquina. **No se ha validado en un clon limpio** ni lo ha ejecutado una segunda persona.
 - **Estado sin commit:** el código probado se identifica con la base `e495b06…` + `cambios.patch`.
-  Hasta el commit, la integridad depende de SHA-256 guardados solo en local.
+  Hasta el commit, la integridad depende de SHA-256 guardados solo en local. *(Situación a la fecha
+  de los registros; ver adenda.)*
 - **`.env` presente durante D3b:**
   - en un clon sin `.env`, `test_cabecera_de_workspace_opcional` (de `test_agente_simulado.py`, que
     no forma parte de las 19) tomaría la otra rama;
@@ -220,6 +222,9 @@ VERIFICADA y operativa CONFORME, con 0 discrepancias en el SHA-256 independiente
 - **Ejecuciones A y B sin evidencia original** (sección 6.1).
 
 **Procedimiento de reproducción, en un directorio aislado y nunca en el repositorio de trabajo:**
+
+*Procedimiento A, reproducción histórica del estado registrado en D3a* (base `e495b06…` +
+`cambios.patch` del registro). No se combina con el procedimiento B de la adenda.
 1. Clonar el repositorio en una carpeta temporal nueva, por ejemplo
    `git clone <url-del-repositorio> <carpeta-temporal>/lesco-verif`.
 2. Dentro de **esa** copia: `git checkout e495b062492cb34e073fb99bb283f38924c0d30c`.
@@ -244,6 +249,11 @@ VERIFICADA y operativa CONFORME, con 0 discrepancias en el SHA-256 independiente
 **Lo que hizo el autor, según consta en la sesión:**
 - **Autorizó comandos:** cada modificación de archivos y cada ejecución se autorizó explícitamente,
   una a una, antes de hacerse.
+  - *Aclaración posterior (2026-11-13):* "una a una" describe el procedimiento seguido en la sesión
+    de Claude Code. Claude Code presentaba el diff o el comando, el autor lo aprobaba, pedía cambios o
+    lo rechazaba, y después se informaba de la verificación. Ese procedimiento consta solo en la
+    transcripción de la sesión, que no forma parte del repositorio. **No** es un registro
+    independiente ni una certificación. Ver `docs/uso_de_ia.md`.
 - **Revisó propuestas y resultados:** revisó los diffs propuestos (en algunos casos pidió cambios,
   por ejemplo el mensaje de rechazo de `guardar_resultado` y dos aserciones de una prueba) y los
   informes de resultados que entregó Claude Code.
@@ -283,7 +293,7 @@ La declaración formal del proyecto se mantiene en `docs/uso_de_ia.md`.
 | El agente o el modelo resisten la inyección de instrucciones | **No se ha medido** | Pendiente: F7 |
 | Las pruebas se reproducen en un clon limpio | **No verificado** | Pendiente |
 | Las 19 pruebas pasaron en las ejecuciones A y B | **Solo consta en la sesión** | Sin salida original |
-| La evidencia es pública y está sellada en git | **No** | PENDIENTE_REVISION_HUMANA; sin commit |
+| La evidencia es pública y está sellada en git | **No** | PENDIENTE_REVISION_HUMANA; sin commit (a la fecha de los registros; ver adenda: el código ya está en `e254f68`, pero la evidencia privada sigue sin publicar y git no aporta autenticidad certificada por terceros) |
 
 ## 14. Datos no verificables o pendientes de confirmar
 
@@ -293,4 +303,48 @@ La declaración formal del proyecto se mantiene en `docs/uso_de_ia.md`.
 - **Correspondencia exacta entre "Aporte" y requisito:** la columna "Aporte" de §2 es una
   interpretación del proyecto; los IDs y textos sí coinciden con `PLAN_PROYECTO.md` §1.
 - **URL del repositorio para el clon:** se deja como marcador (`<url-del-repositorio>`). La
-  publicación y el commit no están hechos.
+  publicación y el commit no están hechos. *(A la fecha de los registros; ver adenda.)*
+
+## Adenda posterior (2026-11-13): publicación del commit `e254f68`
+
+- **Commit:** después de los registros D3a y D3b, el autor publicó el commit
+  `e254f6833c6686037ebb47000e65215666bd63bb` (2026-11-13 20:58:58 -06:00) en `origin/main`.
+  - **Sincronización:** la referencia local `origin/main` coincide con `HEAD`; no se consultó GitHub
+    en directo.
+  - **Firma:** el commit **no está firmado**.
+- **Lo que incluye y lo que no:**
+  - **Incluye:** el código de las etapas 1 y 2, las pruebas, el registrador de evidencia y sus pruebas,
+    `evidencia/INDICE.md`, este documento y `evidencia/etapa2_agente.md`.
+  - **No incluye:** `evidencia/privado/`, `Solicitud/`, los archivos del segundo anotador ni `.env`.
+- **Correspondencia con lo registrado** (verificación de solo lectura, 2026-11-13): se comparó el
+  SHA-256 normalizado a LF de los 31 archivos de código publicados en `HEAD` con
+  `codigo_sha256_lf_antes` del registro E2-5 (`20261113-201818_suite-completa-e25`).
+  - **30 COINCIDE y 1 DIFERENTE:** `.gitignore`, modificado después de E2-5 para excluir `Solicitud/` y
+    los archivos del segundo anotador. No se ejecuta y no afecta a pruebas ni métricas.
+  - **Ningún archivo nuevo ni ausente.**
+- **Relación con esta etapa:**
+  - **`mcp_server/servidor_lesco.py`:** el hash registrado en E2-5 es el mismo que el registrado en
+    D3a (`416dbd6711bfffb5e3bb6963ff7d06febc5948f8c733d025c060628278063008`), así que el servidor
+    publicado corresponde al verificado en D3a.
+  - **`tests/test_servidor_mcp.py`:** coincide con E2-5, pero **no** se comparó directamente su hash de
+    E2-5 con el de D3a (no verificado).
+- **Procedimiento B, reproducción con el código publicado** (alternativo al procedimiento A de la
+  sección 10; no se combinan):
+  1. Clonar el repositorio en una carpeta temporal nueva, nunca en el repositorio de trabajo.
+  2. Dentro de esa copia: `git checkout e254f6833c6686037ebb47000e65215666bd63bb`.
+  3. Ejecutar `python -m unittest tests.test_servidor_mcp -v`.
+  4. Borrar la carpeta temporal al terminar.
+
+  Este procedimiento reproduce las pruebas con el código **publicado**, que corresponde al registrado
+  en E2-5. **No** reconstruye el estado exacto de D3a: para eso se usa el procedimiento A.
+- **Trazabilidad frente a autenticidad:**
+  - **Lo que da el commit:** **trazabilidad de versiones** (qué contenido existe en esa versión).
+  - **Lo que no da:** no es una autenticidad certificada por terceros (sin firma ni sellado de tiempo
+    de terceros).
+  - **La correspondencia con E2-5:** es **consistencia documental** basada en SHA-256.
+- **Lo que no cambia:**
+  - las cifras, fechas, resultados y hashes de D3a y D3b;
+  - la evidencia privada sigue sin publicar;
+  - las candidatas siguen PENDIENTE_REVISION_HUMANA;
+  - este documento se publicó con el estado "borrador pendiente de revisión del autor", que se mantiene
+    hasta su revisión final.

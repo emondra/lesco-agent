@@ -1,8 +1,18 @@
 # TODO — LESCO-Agent
 
 Tareas pendientes, ordenadas según el calendario de 14 días de
-[PLAN_PROYECTO.md](PLAN_PROYECTO.md#7-fases-de-desarrollo). Las referencias D1–D12 apuntan a las
+[PLAN_PROYECTO.md](PLAN_PROYECTO.md#7-fases-de-desarrollo). Las referencias D1–D19 apuntan a las
 decisiones de ese plan.
+
+> **Estado al 2026-11-13:**
+> - **Implementado y verificado con pruebas automatizadas:** la arquitectura de F4 y las etapas de
+>   integridad 1 y 2 (D18 y D19). El registro E2-5 dio 97/97 pruebas aprobadas con el modelo
+>   **simulado** y datos sintéticos.
+> - **Pendiente:** el experimento A/B con el modelo real (F5 a F7) y F8 a F10. **Todavía no hay
+>   resultados del experimento A/B formal.** El piloto de 5 casos (2026-11-03) no forma parte del
+>   experimento formal.
+> - El calendario de cada fase se conserva como plan original. La actualización está en
+>   PLAN_PROYECTO.md §7.
 
 ## Bloqueantes
 
@@ -77,7 +87,9 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 - [x] Tokenizador, plantilla con `OMITIR` prellenado (240 palabras, 166 por etiquetar), buscador e instrucciones.
 - [ ] **Autor:** anotador 1 (2–3 horas estimadas).
 - [x] Script del anotador 2 y prompt v1 (`eval/anotador_llm.py`).
-- [ ] Ejecutar el anotador 2 (requiere clave válida; después de que el autor termine).
+- [ ] Completar o validar la ejecución independiente del anotador 2 conforme al protocolo, después de que el autor termine su anotación; verificar disponibilidad de una clave válida si es necesario continuar la ejecución.
+  - *Estado (2026-11-13, según el autor):* ejecución parcial o validación pendiente. No se considera
+    completada.
 - [x] Script de kappa (todas las palabras y solo contenido) y lista de desacuerdos.
 - [ ] Calcular kappa y adjudicar (registro en `eval/adjudicacion.md`).
 - [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).
@@ -87,13 +99,51 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 - [x] Congelar métricas en `docs/metricas.md` (v1) antes de ejecutar.
 - [x] Puntuación y comando único (`eval/puntuar.py`, `reproducir.py`), referencia desde la adjudicación (`eval/construir_referencia.py`); probado con trazas simuladas.
 - [x] Piloto de 5 casos × A y B (2026-11-03): 10/10 terminaron bien; ≈ US$ 0,05 por ejecución → experimento ≈ US$ 14.
+  - *Nota (2026-11-13):* el piloto usó casos aparte (`eval/piloto/`) para medir el costo y el
+    funcionamiento. **No** sustituye a A×3 ni a B×3 y **no** es un resultado del experimento formal.
 - [ ] Ejecutar Config A × 3; guardar todas las trazas.
+
+## Etapas de integridad 1 y 2 · D18 y D19 (13 nov; no previstas en el calendario)
+
+Detalle en `evidencia/etapa1_servidor_mcp.md`, `evidencia/etapa2_agente.md` y PLAN_PROYECTO.md §6.
+
+- [x] Servidor MCP v0.2.0: `--caso` opcional y validado al arrancar. Vinculado, solo entrega la
+      transcripción y solo guarda el resultado de ese caso (D18).
+- [x] Agente: `--caso` obligatorio y validado con `fullmatch`. No arranca el servidor si la
+      configuración no lo vincula al caso. La traza registra servidor, versión y caso vinculado (D18).
+- [x] Configuraciones A, B y demo con la pareja `--caso {caso}`.
+- [x] Validación documental y conjunto esperado antes de puntuar (D19). Si falla, se lanza
+      `ErrorVinculacion` y `reproducir.py` termina con código 3: en esa ejecución no genera ni
+      sobrescribe tablas ni puntuaciones parciales. No borra archivos de ejecuciones anteriores. Las
+      fórmulas de `docs/metricas.md` v1 no cambian.
+- [x] Instrumento de evidencia `evidencia/registrar_pruebas.py` (v1.2.1), con sus pruebas.
+- [x] Registro E2-5: **97/97** pruebas automatizadas aprobadas, con el modelo simulado y datos
+      sintéticos. **No** es el experimento A/B con el modelo real.
+- [x] Commit `e254f68`, hecho y publicado por el autor. Contrastado con E2-5: 30 de 31 archivos de
+      código coinciden; la diferencia es `.gitignore`.
+- [ ] Actualización documental E2-6: **preparada en local, sin commit ni publicación en GitHub**.
+      Incluye las adendas de los dos informes de evidencia, `PLAN_PROYECTO.md`, `README.md`,
+      `docs/metricas.md`, `docs/uso_de_ia.md` y este archivo. Cada edición se verificó por separado.
+      **Pendiente:** la verificación integral del conjunto después de la última edición.
+- [ ] **Autor:** revisar los cambios documentales de E2-6 y decidir su commit y publicación.
+- [ ] **Autor:** revisar las candidatas de evidencia (`PENDIENTE_REVISION_HUMANA`) y decidir si se
+      publican.
+- [ ] Servidor MCP: pasar `PATRON_CASO` de `match` a `fullmatch`. Hoy acepta un salto de línea final
+      sin `--caso` (PLAN §8, abierto 5).
+- [ ] Verificación en un clon limpio, y si es posible por otra persona (PLAN §8, abierto 6; ver también
+      F10).
+- [ ] Opcional: manifiesto de ejecución con configuraciones y repeticiones junto a las trazas (PLAN §8,
+      abierto 7).
+- [ ] **Autor:** completar en `docs/uso_de_ia.md` el uso de IA del 2026-11-01 al 2026-11-13 y aclarar
+      la discrepancia cronológica de la fila del 2026-11-01.
 
 ## F7 · Experimento y seguridad (9 – 11 nov)
 
 - [ ] Ejecutar Config B × 3 con los mismos casos y parámetros.
 - [ ] Diseñar y ejecutar ≥ 5 ataques de inyección indirecta; documentar el resultado de cada uno.
-- [ ] Script de un comando que regenera las tablas desde las trazas.
+- [x] Script de un comando que regenera las tablas desde las trazas → `reproducir.py` (hecho en F6).
+      Desde D19, si falta o es inconsistente alguna ejecución, termina con código 3 sin generar ni
+      sobrescribir tablas. No borra las de ejecuciones anteriores.
 - [ ] Análisis de errores con tipología y ejemplos de trazas.
 
 ## F8 · Demo de audio (12 nov)

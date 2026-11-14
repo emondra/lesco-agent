@@ -63,4 +63,58 @@ LESCO); solo la concordancia con la referencia construida según la guía. Se de
 
 ## Registro de cambios
 
-*(ninguno)*
+### 2026-11-13 · Validación documental antes de puntuar (D19). Las métricas no cambian
+
+**Qué no cambia.** Las fórmulas, definiciones, denominadores, columnas, la agregación, el bootstrap
+(10 000 remuestreos, semilla 20261117) y el criterio de dificultad de las secciones 1 a 6 siguen
+siendo los mismos. Por eso este documento sigue en la **versión 1** y no hay cifras que reportar en
+dos versiones. Las funciones de puntuación (`normalizar`, `puntuar_caso`, `proceso_desde_traza`,
+`ultima_traza`, `agregar`, `diferencia_pareada`) y las constantes `PRECIOS`, `SEMILLA` y
+`REMUESTREOS` no se modificaron (comparación estática, `evidencia/etapa2_agente.md` §5.3).
+
+**Qué se añade.** Antes de calcular cualquier métrica, `eval/puntuar.py` (`evaluar`) comprueba dos
+cosas.
+
+1. **Conjunto esperado.** Deben estar exactamente las configuraciones y repeticiones esperadas
+   (`rep1`…`repN`), y cada una debe tener una traza por cada caso de la referencia. `reproducir.py`
+   las indica siempre: por defecto `--configs A B` y `--repeticiones 3`, los mismos valores que
+   `agente/ejecutar_casos.py`. Falla si la referencia está vacía, si falta o sobra una configuración o
+   repetición, o si falta la traza de una ejecución esperada.
+2. **Consistencia de cada ejecución** (`problemas_de_validez`). Se comprueba que:
+   - la traza se puede leer: cada línea es un objeto JSON con `tipo`, y los eventos `herramienta`
+     tienen los campos esperados;
+   - tiene un evento `inicio` del mismo caso;
+   - todos los servidores MCP registrados declaran estar vinculados a ese caso (`caso_vinculado`) y
+     tienen versión;
+   - ningún `guardar_resultado` exitoso apunta a otro caso;
+   - `<caso>.json` existe **si y solo si** la traza registra exactamente un guardado exitoso de ese
+     caso;
+   - el archivo, si existe, es un objeto JSON con el mismo `caso_id` y con `secuencia` como lista de
+     textos.
+
+**Efecto sobre el caso "no guardado"** (§1). Un caso solo cuenta como no guardado, con secuencia
+vacía, si su traza es consistente y no registra ningún guardado exitoso. Si la traza registra un
+guardado y falta el archivo, o al revés, la ejecución se considera inconsistente y no se puntúa como
+no guardada.
+
+**Fallo cerrado.** Si se incumple alguna de estas condiciones, `evaluar` lanza `ErrorVinculacion`
+con la lista de ejecuciones afectadas. Los mensajes indican la línea o el archivo, nunca su contenido.
+Ante ese error, `reproducir.py` termina con **código 3** antes de escribir nada: en esa ejecución no
+genera ni sobrescribe tablas ni puntuaciones parciales. Tampoco borra los archivos de
+`resultados/tablas/` que haya generado una ejecución anterior, que quedan como estaban y no
+corresponden al estado actual de las trazas. El código 2 sigue indicando que falta la referencia o
+las trazas del experimento.
+
+**Alcance.** Es una comprobación de **consistencia documental**: verifica lo que declaran la traza y
+el resultado. **No** demuestra autenticidad ni qué proceso escribió un archivo. Los SHA-256 del
+registro de evidencia dan consistencia documental, no autenticidad certificada por terceros. Git
+aporta trazabilidad de versiones.
+
+**Estado de la evidencia.** Las 97/97 pruebas aprobadas del registro E2-5
+(`20261113-201818_suite-completa-e25`) son pruebas automatizadas con el modelo **simulado** o con
+datos sintéticos. Describen el comportamiento del código, **no** son resultados del experimento A/B
+con el modelo real, que sigue pendiente. Este documento todavía no contiene cifras experimentales.
+
+**Motivo:** evitar que se puntúen ejecuciones incompletas, mezcladas entre casos o sin vinculación
+demostrada del servidor (D18 y D19, `PLAN_PROYECTO.md` §6). Detalle en `evidencia/etapa2_agente.md`
+§5.

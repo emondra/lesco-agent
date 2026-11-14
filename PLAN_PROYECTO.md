@@ -3,6 +3,9 @@
 > **Estado:** Fase 0 cerrada. Plan **aprobado** por el autor el 2026-10-31 (D3, D5, D9 y D11
 > aprobadas explícitamente). Entrega final: **2026-11-17**.
 > No contiene código, resultados experimentales ni vocabulario LESCO.
+> **Aclaración 2026-11-13:** la línea anterior describe **este documento** (un plan, sin código ni
+> resultados), no el repositorio. El repositorio sí contiene código y pruebas automatizadas (commit
+> `e254f68`; ver §6.6), pero **todavía no** contiene resultados del experimento A/B con el modelo real.
 
 **Título:** LESCO-Agent: Diseño y evaluación de un agente inteligente basado en Skills y MCP para la
 generación asistida de secuencias en Lengua de Señas Costarricense a partir de audio en español.
@@ -91,6 +94,9 @@ Fuentes analizadas:
 
 ## 2. Cobertura de la propuesta actual
 
+> Análisis de la propuesta inicial al 2026-10-31; se conserva como registro histórico. El estado actual
+> está en §6 y §7.
+
 | Req. | Estado | Evidencia en la propuesta / comentario |
 |---|---|---|
 | S1 Dominio | ✅ Cubierto | LESCO, distinto de reseñas. |
@@ -176,7 +182,19 @@ demostración y el avatar 3D fuera del alcance mínimo.
 
 ## 6. Arquitectura mínima viable (aprobada) [D]
 
-**Estado al 2026-11-01: implementada hasta F4** (revisión 3 de esta sección; refleja el código).
+**Estado al 2026-11-13** (revisión 4 de esta sección; refleja el commit `e254f68`):
+
+| Ámbito | Estado |
+|---|---|
+| Arquitectura de F4 (servidor MCP, agente, Skill, política, trazas y ejecutor de casos) | **Implementada** |
+| Etapas de integridad 1 y 2 (D18 y D19) | **Implementadas y registradas** (§6.6) |
+| F5: anotador 1, anotador 2 (completar o validar), kappa, adjudicación y congelamiento del conjunto | **Pendiente.** Casos y plantilla hechos. Script y prompt del anotador 2 preparados; según el autor, su ejecución fue parcial o su validación está pendiente, y no se considera completado |
+| F6: línea base A×3 con el modelo real | **Pendiente** (métricas congeladas, puntuación, `reproducir.py` y piloto sí hechos) |
+| F7: B×3, los 5 ataques y el análisis de errores con el modelo real | **Pendiente** |
+
+La revisión 3 (2026-11-01) describía el estado hasta F4. Su diagrama se conserva abajo y los cambios
+posteriores se listan a continuación. Que la arquitectura esté implementada **no** significa que F5, F6
+o F7 estén terminadas.
 
 ```
  [Audio .wav] ── stt/ (F8, solo demo) ──┐
@@ -205,6 +223,32 @@ demostración y el avatar 3D fuera del alcance mínimo.
  Salida final: secuencia de IDs + glosas + SIN_COBERTURA:<palabra>; avatar 3D → trabajo futuro (D5)
 ```
 
+**Cambios desde la revisión 3 (etapas 1 y 2, 2026-11-13; detalle en `evidencia/etapa1_servidor_mcp.md`
+y `evidencia/etapa2_agente.md`):**
+
+- **Servidor MCP, v0.2.0 (D18):** `--caso` opcional, validado al arrancar. Vinculado, solo entrega la
+  transcripción y solo guarda el resultado de ese caso. Sin `--caso` mantiene el comportamiento anterior
+  (uso por separado).
+- **Agente (D18):**
+  - `--caso` obligatorio y validado con `fullmatch`;
+  - `problemas_de_vinculacion()` se comprueba **antes** de crear la traza y de arrancar procesos;
+  - si la configuración no vincula el servidor al caso, la traza de rechazo solo tiene el evento `fin`
+    y no se arranca ningún servidor;
+  - el evento `inicio` registra `servidores = [{nombre, version, caso_vinculado}]`.
+- **Configuraciones A, B y demo:** la misma pareja `"--caso", "{caso}"` en el comando del servidor. A y B
+  siguen difiriendo solo en `instrucciones` (Skill), `nombre` y `descripcion`.
+- **Evaluación (D19):**
+  - `eval/puntuar.py` comprueba la validez documental de cada ejecución y el conjunto esperado antes de
+    puntuar;
+  - si falta o es inconsistente alguna ejecución esperada, `reproducir.py` termina con código 3. En esa
+    ejecución no genera ni sobrescribe tablas ni puntuaciones parciales, y no borra las tablas de
+    ejecuciones anteriores;
+  - fórmulas y columnas sin cambios.
+- **Registro de evidencia:** `evidencia/registrar_pruebas.py` (v1.2.1).
+  - Ejecuta solo suites `unittest` cerradas, con un entorno sin credenciales y una guardia de red parcial.
+  - Guarda originales privados en `evidencia/privado/` (no versionada) y un índice de solo agregar en
+    `evidencia/INDICE.md`.
+
 ### Decisiones de diseño
 
 D3, D5, D9 y D11 fueron aprobadas explícitamente por el autor el 2026-10-31; el resto se aprobó con el plan.
@@ -228,6 +272,8 @@ D3, D5, D9 y D11 fueron aprobadas explícitamente por el autor el 2026-10-31; el
 | D15 | **Cuarta herramienta `obtener_transcripcion`** (F4): el agente recibe solo el `caso_id` y lee la frase por herramienta. | La transcripción es contenido de terceros: es el vector realista de inyección indirecta (S7). El servidor nunca devuelve etiquetas de referencia. |
 | D16 | **Definición de la tarea** en `eval/guia_anotacion.md` v1 (F4) — **requiere aprobación del autor:** (a) orden de la frase en español, sin sintaxis LESCO; (b) lista cerrada de palabras omitidas (artículos, preposiciones, conjunciones, pronombres, posesivos, auxiliares); (c) expresiones de varias palabras; (d) búsqueda por lema; (e) variante sin número; (f) un sinónimo como máximo; (g) `SIN_COBERTURA` para lo demás. | Hace que "precisión" sea medible y que dos anotadores puedan coincidir. Son simplificaciones lingüísticas declaradas, no afirmaciones sobre la gramática LESCO. |
 | D17 | **Esfuerzo `medium`** para Sonnet 5.5 en A y B, y reintentos ante errores transitorios de la API. | Menor costo y tiempo en una tarea de muchas llamadas cortas; mismo valor en A y B. |
+| D18 | **Vinculación de cada ejecución a su caso** (2026-11-13). El servidor MCP acepta `--caso` (opcional, para conservar su uso por separado) y, vinculado, solo entrega y guarda ese caso. El agente exige `--caso` (sin valor por defecto), lo valida con `fullmatch` y se niega a ejecutar si algún servidor no tiene exactamente una pareja `--caso {caso}`. | Sin vinculación, una ejecución (por error o por una inyección en la transcripción) podía escribir el resultado de otro caso en la carpeta compartida y contaminar su puntuación (NN3, S7). Falla cerrado. No cambia lo que ve el modelo, así que A y B siguen difiriendo solo en la Skill (E1). |
+| D19 | **Validez documental antes de puntuar** (2026-11-13). `evaluar()` exige el conjunto esperado (configuraciones × `rep1..repN` × casos; por defecto A, B y 3, los mismos valores que `ejecutar_casos.py`) y, para cada ejecución, consistencia entre traza y resultado (traza legible, `inicio` del caso, servidores vinculados, sin guardados ajenos, resultado si y solo si hay exactamente un guardado, `caso_id` declarado y `secuencia` válida). Si algo falla, se lanza `ErrorVinculacion` y `reproducir.py` termina con código 3: en esa ejecución no genera ni sobrescribe tablas ni puntuaciones parciales, y no borra las tablas de ejecuciones anteriores. | Excluir ejecuciones en silencio sesgaría la comparación A/B y produciría cifras no reproducibles (NN3, E2, E4). Es consistencia documental, no autenticidad. Las fórmulas de `docs/metricas.md` v1 no cambian. |
 
 ### Herramientas MCP implementadas (F3–F4)
 
@@ -241,7 +287,11 @@ D3, D5, D9 y D11 fueron aprobadas explícitamente por el autor el 2026-10-31; el
 | `*__admin*`, `*__depurar*` | — | ocultar | ocultar | — |
 
 Justificación completa en `politica/README.md`. Pruebas: 29 (léxico, servidor por MCP y agente
-completo con modelo simulado).
+completo con modelo simulado). *(Cifra del 2026-11-01, sin salida registrada; el estado registrado
+actual está en §6.6.)*
+
+Desde la etapa 1 (servidor v0.2.0, D18), con `--caso` el servidor solo entrega la transcripción y solo
+guarda el resultado del caso autorizado. El control de formato se aplica antes que el de vinculación.
 
 ### Métricas (a congelar en `docs/metricas.md` antes de ejecutar A) [D]
 
@@ -308,6 +358,31 @@ piloto (F6) mide el costo real antes de lanzar las 240 ejecuciones; si supera lo
 decide entre reducir casos (mínimo 40) o cambiar de modelo **antes** de medir la línea base. El
 anotador 2 con el índice completo en el prompt costaría ~US$ 5 (48 casos × ~20 000 tokens).
 
+### 6.6 Estado de las pruebas y de la evidencia (2026-11-13) [D]
+
+**Tres niveles que no se mezclan:**
+
+| Nivel | Qué es | Estado |
+|---|---|---|
+| 1. Pruebas automatizadas con modelo simulado o datos sintéticos | Comportamiento **del código**: servidor, agente, política, traza, evaluación y reproducción | **97/97** en el registro E2-5 (`20261113-201818_suite-completa-e25`) |
+| 2. Experimento con el modelo real (A×3 y B×3) y los 5 ataques (F7) | Efecto de la Skill y comportamiento real del modelo | **No ejecutado.** Requiere completar F5 (anotador 1, kappa, adjudicación y congelamiento) |
+| 3. Afirmaciones científicas del artículo | Lo que respalde el nivel 2 (y el nivel 1 para describir el sistema) | **Ninguna** sobre la efectividad de la Skill ni sobre la resistencia a la inyección |
+
+- **Registros de la suite completa** (no se suman: cada uno incluye al anterior):
+  - D3b (`20261113-191307_suite-completa-linea-base`): 55 pruebas;
+  - E2-4 (`20261113-194941_suite-completa-etapa2`): 63;
+  - E2-5: 97.
+- **Código publicado:** commit `e254f68` (2026-11-13). Corresponde al código registrado en E2-5, salvo
+  `.gitignore` (30 de 31 archivos coinciden por SHA-256 normalizado a LF; la diferencia es posterior y
+  no ejecutable).
+- **Evidencia:**
+  - los registros están en `evidencia/privado/` (no versionada), pendientes de revisión humana y sin
+    publicar;
+  - el detalle, con identificadores y hashes, está en `evidencia/etapa1_servidor_mcp.md`,
+    `evidencia/etapa2_agente.md` y `evidencia/INDICE.md`.
+- **Alcance:** los SHA-256 dan consistencia documental y git da trazabilidad de versiones. **Ninguno**
+  de los dos es autenticidad certificada por terceros.
+
 ---
 
 ## 7. Fases de desarrollo
@@ -329,6 +404,17 @@ revisables.
 | **F8** Demo de audio (mínima) | 12 nov | STT de un audio sintético hacia el agente; salida en texto. | `stt/` | Demo de extremo a extremo con una acción bloqueada por la política. |
 | **F9** Artículo | 9 – 15 nov | Artículo completo (introducción, trabajo relacionado y metodología pueden escribirse desde el 5 nov). | `paper/` (PDF) | 6–8 páginas; resumen con cifra. |
 | **F10** Cierre y entrega | 16 – 17 nov | Prueba en clon limpio, lista de comprobación, entrega; preparar defensa. | `README.md` final, `docs/defensa/` | Lista de comprobación completa; **entrega el 17 nov**. |
+
+> **Actualización 2026-11-13** (el calendario de la tabla se conserva como plan original):
+> - **F5:** casos, plantilla, y script y prompt del anotador 2 hechos. El anotador 2, según el autor, se
+>   ejecutó parcialmente o tiene la validación pendiente, y no se considera completado. **Pendientes:**
+>   anotador 1, completar o validar el anotador 2 conforme al protocolo (§7.1, paso 6), kappa,
+>   adjudicación y congelamiento. La fecha límite del 8 nov ya pasó sin congelar.
+> - **F6:** métricas congeladas, puntuación, `reproducir.py` y piloto hechos. **Pendiente:** A×3.
+> - **F7:** **pendientes** B×3, los 5 ataques y el análisis de errores. El comando único ya existe desde F6.
+> - **Entre F6 y F7 se intercalaron las etapas de integridad 1 y 2** (D18 y D19), no previstas en el
+>   calendario, y el instrumento de registro de evidencia.
+> - **F8–F10:** pendientes.
 
 Como no hay holgura: si el 8 de noviembre no está congelado el conjunto de evaluación, se recorta el
 STT (F8) antes que el experimento o el artículo.
@@ -383,6 +469,12 @@ Requisitos externos: clave válida de la API (paso 6). Fecha límite de congelam
 2. ~~Aprobar D15, D16 y D17 y el plan de F5~~ → **aprobados por el autor el 2026-11-01.**
 3. Clave válida de la API (la guardada en Windows responde 401).
 4. Cómo subir a GitHub los commits locales (repositorio público; ver `docs/datos_y_etica.md` sobre el índice del CENAREC).
+   → 2026-11-13: el autor publicó el commit `e254f68` en `origin/main`.
+5. (2026-11-13) Pasar `PATRON_CASO` del servidor MCP de `match` a `fullmatch`: hoy acepta un salto de
+   línea final en `caso_id` (neutralizado con `--caso`, no sin vincular). Paso aparte, con su registro.
+6. (2026-11-13) Verificación en un clon limpio, y si es posible por otra persona (S8).
+7. (2026-11-13) Manifiesto de ejecución opcional que guarde configuraciones y repeticiones junto a las
+   trazas. Hoy el conjunto esperado depende de los valores por defecto compartidos (D19).
 
 ## 9. Fuentes consultadas para D9 (pendientes de lectura completa)
 

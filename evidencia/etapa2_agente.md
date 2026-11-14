@@ -7,6 +7,8 @@
 > Divulgar cualquier evidencia requiere revisión humana y aprobación explícita del autor**
 > (estado actual: PENDIENTE_REVISION_HUMANA).
 > Este documento continúa `evidencia/etapa1_servidor_mcp.md` (etapa 1, servidor MCP con `--caso`).
+> **Adenda posterior (2026-11-13):** publicación del commit `e254f68` y su correspondencia con E2-5.
+> Ver el final del documento.
 
 ## 1. Objetivo y alcance
 
@@ -325,11 +327,15 @@ Ninguna contiene datos del segundo anotador. Ninguna línea se reproduce aquí.
 - **`referencia.jsonl` mal formado:** sigue fallando con traceback en `reproducir.py` (fuera del alcance de E2-5).
 - **Sin commit, sin clon limpio y un solo entorno:** el código probado se identifica con la base `e495b06…`
   más `cambios.patch`. No hay verificación en un clon limpio ni por una segunda persona. Windows y
-  CPython 3.12.10.
+  CPython 3.12.10. *(Lo de "sin commit" describe la situación a la fecha de los registros; ver adenda.
+  Sigue sin haber verificación en un clon limpio ni por una segunda persona.)*
 - **`.env` presente en el disco:** las pruebas no lo leen, pero `cargar_clave()` lo leería como respaldo si
   se creara el cliente real. Ninguna prueba lo hace sin reemplazar `cargar_clave`.
 
 **Cómo reproducir** (en un directorio aislado, nunca en el repositorio de trabajo):
+
+*Procedimiento A, reproducción histórica del estado registrado en E2-5* (base `e495b06…` +
+`cambios.patch` + fuentes sin seguimiento del registro). No se combina con el procedimiento B de la adenda.
 1. Clonar el repositorio en una carpeta temporal y, dentro de esa copia, hacer `git checkout e495b06…`.
 2. Aplicar `cambios.patch` del registro E2-5. Solo será accesible si se aprueba la publicación de la
    candidata; mientras tanto, solo el autor puede hacerlo con el original privado.
@@ -350,6 +356,11 @@ Ninguna contiene datos del segundo anotador. Ninguna línea se reproduce aquí.
 
 **Lo que hizo el autor, según consta en la sesión:**
 - **Autorizó comandos:** cada edición y cada ejecución se autorizó explícitamente, una a una.
+  - *Aclaración posterior (2026-11-13):* "una a una" describe el procedimiento seguido en la sesión
+    de Claude Code. Claude Code presentaba el diff o el comando, el autor lo aprobaba, pedía cambios o
+    lo rechazaba, y después se informaba de la verificación. Ese procedimiento consta solo en la
+    transcripción de la sesión, que no forma parte del repositorio. **No** es un registro
+    independiente ni una certificación. Ver `docs/uso_de_ia.md`.
 - **Revisó propuestas y resultados:** revisó diffs e informes y pidió correcciones de diseño. Por ejemplo:
   - `fullmatch` y la vinculación estricta;
   - la distinción entre política y servidor en T4 y T5;
@@ -363,6 +374,11 @@ Ninguna contiene datos del segundo anotador. Ninguna línea se reproduce aquí.
 
 **Verificaciones estáticas realizadas tras cada edición** (constan en la sesión; las ejecutó Claude Code
 con autorización del autor):
+
+*Aclaración posterior (2026-11-13):* "tras cada edición" se limita a los pasos de la tabla siguiente.
+La comparación del árbol sintáctico solo se hizo donde la tabla lo indica: E2-3 y las dos ediciones de
+E2-5. En E2-1 y E2-2 se registran `ast.parse`, `json.loads`, el diff y las huellas, sin esa
+comparación. Las ediciones documentales posteriores (E2-6) no tuvieron análisis del árbol sintáctico.
 
 | Paso | Verificaciones |
 |---|---|
@@ -404,7 +420,8 @@ con autorización del autor):
 | El agente o el modelo resisten la inyección de instrucciones | **No se ha medido** | Pendiente: F7 con el modelo real |
 | El experimento real está protegido contra la contaminación entre casos | **El mecanismo está implementado y probado con simulación.** Su funcionamiento en el experimento real se verá cuando se ejecute | E2-5 (nivel 1). Experimento pendiente |
 | Las pruebas se reproducen en un clon limpio | **No verificado** | Pendiente |
-| La evidencia es pública, autenticada por terceros o sellada en git | **No** | `PENDIENTE_REVISION_HUMANA`. Sin commit. Los SHA-256 solo dan consistencia documental |
+| La evidencia es pública, autenticada por terceros o sellada en git | **No** | `PENDIENTE_REVISION_HUMANA`. Sin commit a la fecha de los registros (ver adenda: el código ya está en `e254f68`, pero la evidencia privada sigue sin publicar y el commit, sin firmar, da trazabilidad y no autenticidad certificada por terceros). Los SHA-256 solo dan consistencia documental |
+| El código publicado en `e254f68` es el que se verificó en E2-5 | **Sí**, como consistencia documental: 30 de 31 archivos de código coinciden; la diferencia es `.gitignore`, posterior y no ejecutable | Adenda (comparación de SHA-256 normalizado a LF, de solo lectura) |
 
 ## 14. Datos no verificables o pendientes de confirmar
 
@@ -415,3 +432,57 @@ con autorización del autor):
 - **Correspondencia entre "Aporte" y requisito:** la columna de §2 es una interpretación. Los IDs y textos
   coinciden con `PLAN_PROYECTO.md` §1.
 - **URL del repositorio para el clon:** no se incluye. La publicación y el commit no están hechos.
+  *(A la fecha de los registros; ver adenda.)*
+
+## Adenda posterior (2026-11-13): publicación del commit `e254f68` y correspondencia con E2-5
+
+- **Commit:** después del registro E2-5, el autor publicó el commit
+  `e254f6833c6686037ebb47000e65215666bd63bb` (2026-11-13 20:58:58 -06:00) en `origin/main`.
+  - **Sincronización:** la referencia local `origin/main` coincide con `HEAD`; no se consultó GitHub
+    en directo.
+  - **Firma:** el commit **no está firmado**.
+- **Lo que incluye y lo que no:**
+  - **Incluye:** el código de las etapas 1 y 2, las pruebas, el registrador y sus pruebas,
+    `evidencia/INDICE.md`, `evidencia/etapa1_servidor_mcp.md` y este documento.
+  - **No incluye:** `evidencia/privado/`, `Solicitud/`, los archivos del segundo anotador ni `.env`.
+- **Verificación de correspondencia** (solo lectura, 2026-11-13): para cada uno de los 31 archivos de
+  código publicados en `HEAD` (con el mismo alcance que usa el registrador: agente y configuraciones,
+  servidor, scripts de `eval/`, pruebas, Skill, políticas, `reproducir.py`, el registrador,
+  `.gitattributes` y `.gitignore`) se comparó su SHA-256 normalizado a LF con `codigo_sha256_lf_antes`
+  del registro E2-5 (`20261113-201818_suite-completa-e25`).
+
+| Resultado | Archivos |
+|---|---|
+| COINCIDE | 30 |
+| DIFERENTE | 1: `.gitignore`, modificado después de E2-5 para excluir `Solicitud/` y los archivos del segundo anotador. No se ejecuta y no afecta a pruebas ni métricas |
+| Nuevos o ausentes | 0 |
+
+- **Consecuencia:** el resultado registrado en E2-5 (97/97 pruebas, integridad VERIFICADA y CONFORME)
+  corresponde al código publicado en `e254f68`, salvo `.gitignore`.
+  - **Lo que no cambia:** E2-4 (63 pruebas) sigue describiendo el estado anterior a E2-5.
+  - **Cifras y hashes:** los de E2-4 y E2-5 no cambian.
+- **Procedimiento B, reproducción con el código publicado** (alternativo al procedimiento A de la
+  sección 10; no se combinan):
+  1. Clonar el repositorio en una carpeta temporal nueva, nunca en el repositorio de trabajo.
+  2. Dentro de esa copia: `git checkout e254f6833c6686037ebb47000e65215666bd63bb`.
+  3. Ejecutar `python -m unittest discover -s tests -v`. Se esperan 97 `ok`.
+  4. Solo con acceso autorizado a la metadata privada del registro E2-5: comparar los hashes del
+     código con `codigo_sha256_lf_antes` (se espera la diferencia conocida de `.gitignore`).
+  5. Borrar la carpeta temporal al terminar.
+
+  Los pasos 1, 2, 3 y 5 se pueden hacer solo con el código publicado; **no** necesitan `cambios.patch`
+  ni las fuentes privadas del registro. El paso 4 **sí** requiere la metadata privada de E2-5, que
+  está en `evidencia/privado/` y no se publica. Hasta que se apruebe la publicación de su candidata,
+  solo puede hacerlo quien tenga acceso autorizado. Una persona externa no puede completar esa
+  comparación solo con el repositorio público.
+- **Trazabilidad frente a autenticidad:**
+  - **Lo que da el commit:** **trazabilidad de versiones**.
+  - **Lo que no da:** no aporta autenticidad certificada por terceros (sin firma ni sellado de tiempo
+    de terceros).
+  - **La correspondencia con E2-5:** es **consistencia documental** basada en SHA-256.
+- **Lo que sigue pendiente o igual:**
+  - la evidencia de `evidencia/privado/` sigue sin publicar;
+  - las candidatas siguen PENDIENTE_REVISION_HUMANA;
+  - sigue sin haber verificación en un clon limpio ni por una segunda persona;
+  - este documento se publicó con el estado "borrador pendiente de revisión del autor", que se mantiene
+    hasta su revisión final.
