@@ -108,7 +108,7 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
     Validador: script temporal histórico que solo muestra cifras, con SHA-256
     `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`. Ese script no se
     versiona y la validación real del 2026-11-13 sigue atribuida a él. Una versión revisada,
-    `eval/validar_anotador2.py`, se incorporará al repositorio en el próximo commit (ver la tarea
+    `eval/validar_anotador2.py`, está en el commit local `d82df69`, pendiente de push (ver la tarea
     siguiente). Aun así, la validación no se podrá reproducir solo con el repositorio público,
     porque sus entradas están ignoradas por git.
   - **Alcance:** es completitud técnica. **No** evalúa la calidad lingüística de las etiquetas; eso lo
@@ -117,8 +117,8 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
     se preveía. Esa secuencia, por sí sola, no demuestra la independencia.
   - Hasta esta validación constaba como "ejecución parcial o validación pendiente".
 - [x] Validador revisado del anotador 2 (`eval/validar_anotador2.py`) y 28 pruebas sintéticas
-      (`tests/test_validar_anotador2.py`), implementados y probados el 2026-11-14. **Falta el
-      commit:** se incorporarán al repositorio en el próximo.
+      (`tests/test_validar_anotador2.py`), implementados y probados el 2026-11-14. Incorporados en el
+      commit local `d82df69`, **pendiente de push**.
   - Solo lee y solo imprime cifras. Códigos de salida: 0 = válido, 1 = incompleto o inválido,
     2 = error de lectura.
   - Conserva la regla básica de selección de `eval/anotador_llm.py` (la última respuesta sin
@@ -131,13 +131,19 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
   - Pruebas: **28/28** sintéticas aprobadas y **125/125** en la suite completa, registrada como
     `20261114-000942_suite-completa-f5-validador`. Integridad VERIFICADA y CONFORME, pero el registro
     sigue en `PENDIENTE_REVISION_HUMANA`.
-  - **Todavía no se ha ejecutado sobre los archivos reales del anotador 2.** Las pruebas usan solo
-    datos sintéticos.
+  - Las pruebas usan solo datos sintéticos.
+  - **Ejecución sobre los archivos reales del anotador 2 (2026-11-14):** resultado VÁLIDO (código 0),
+    mostrando solo cifras agregadas: 48/48 casos válidos, 240/240 posiciones alineadas con la
+    plantilla y 0 discrepancias de consistencia entre `anotador2.tsv` y el registro de respuestas. Las
+    cifras coinciden con las de la validación del 2026-11-13. La validación se ejecutó mediante Claude
+    Code el 14 de noviembre de 2026; consta en el registro de la sesión. **No** tiene un expediente
+    formal independiente.
   - La calidad lingüística todavía no ha sido evaluada mediante adjudicación, y el acuerdo entre
     anotadores está pendiente de medirse mediante Cohen's kappa. La independencia deberá justificarse
     mediante el protocolo y la trazabilidad del proceso, no únicamente mediante el valor de kappa.
-- [ ] Opcional: ejecutar `eval/validar_anotador2.py` sobre los archivos reales, mostrando solo
-      cifras, para enlazarlo con la validación del 2026-11-13.
+- [x] Opcional: ejecutar `eval/validar_anotador2.py` sobre los archivos reales, mostrando solo
+      cifras, para enlazarlo con la validación del 2026-11-13. Hecho el 2026-11-14 (ver la tarea
+      anterior), sin expediente formal.
 - [x] Script de kappa (todas las palabras y solo contenido) y lista de desacuerdos.
 - [ ] Calcular kappa y adjudicar (registro en `eval/adjudicacion.md`).
 - [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).
@@ -178,13 +184,27 @@ Detalle en `evidencia/etapa1_servidor_mcp.md`, `evidencia/etapa2_agente.md` y PL
       publican.
 - [ ] Servidor MCP: pasar `PATRON_CASO` de `match` a `fullmatch`. Hoy acepta un salto de línea final
       sin `--caso` (PLAN §8, abierto 5).
-- [ ] **BLOQUEANTE antes de A×3 y B×3 (D19, hallazgo del 2026-11-14):** `eval/puntuar.py` da por
-      consistente una traza que termina por "error del modelo" (p. ej. HTTP 401) o "error al conectar",
-      o que no tiene evento `fin`, y la puntuaría como fallo del agente. Una ejecución con error de
-      autenticación o de conexión no debe puntuarse como error lingüístico. Además, `ultima_traza`
-      elige la traza más reciente sin informar de los intentos anteriores.
-  - Origen: prueba de 1 caso (A/c001/rep1) terminada en HTTP 401, sin consumo de créditos. Su traza
-    se conserva en `trazas/experimento/A/rep1/` hasta decidir su destino.
+- [x] **D19, corrección técnica implementada y verificada (hallazgo y corrección del 2026-11-14):**
+      `eval/puntuar.py` daba por consistente una traza que terminaba por "error del modelo" (p. ej.
+      HTTP 401) o "error al conectar", o que no tenía evento `fin`, y la puntuaba como fallo del agente.
+  - Corrección: `problemas_de_cierre()` invalida antes de puntuar las trazas con fallo técnico, sin
+    evento `fin`, o con `fin` malformado, duplicado o no final. Una ejecución válida con resultado
+    lingüístico incorrecto, o que alcanza el límite de pasos, se sigue puntuando. Las fórmulas de
+    `docs/metricas.md` v1 no cambian.
+  - Pruebas: 8 sintéticas nuevas; suite completa **133/133** con el modelo simulado y datos
+    sintéticos. Commit local `230d580` (sin publicar).
+  - Evidencia: `20261114-080936_suite-completa-d19` (`verificacion_posterior`, OK, CONFORME,
+    integridad criptográfica verificada), en **PENDIENTE_REVISION_HUMANA**.
+  - Limitación residual, no resuelta y no bloqueante: `ultima_traza` elige la traza más reciente sin
+    informar de los intentos anteriores.
+  - **No** es un resultado del experimento: A×3 (F6) y B×3 (F7) siguen pendientes.
+- [ ] **BLOQUEANTE antes de A×3 y B×3 (autenticación, 2026-11-14):** la prueba de 1 caso
+      (A/c001/rep1) terminó en HTTP 401 (autenticación rechazada). No se ha verificado en la
+      facturación si tuvo algún costo. Hace falta una clave válida (ver F4) y comprobarla mediante una
+      única solicitud mínima, con autorización previa del gasto, antes de cualquier ejecución real.
+  - La traza del 401 se conserva en `trazas/experimento/A/rep1/` hasta decidir su destino. Con D19,
+    si quedara como última traza del caso, `reproducir.py` terminaría con código 3; tras un reintento
+    válido se puntúa el reintento.
 - [ ] Verificación en un clon limpio, y si es posible por otra persona (PLAN §8, abierto 6; ver también
       F10).
 - [ ] Opcional: manifiesto de ejecución con configuraciones y repeticiones junto a las trazas (PLAN §8,
