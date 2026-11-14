@@ -188,7 +188,7 @@ demostración y el avatar 3D fuera del alcance mínimo.
 |---|---|
 | Arquitectura de F4 (servidor MCP, agente, Skill, política, trazas y ejecutor de casos) | **Implementada** |
 | Etapas de integridad 1 y 2 (D18 y D19) | **Implementadas y registradas** (§6.6) |
-| F5: anotador 1, anotador 2 (completar o validar), kappa, adjudicación y congelamiento del conjunto | **Pendiente.** Casos y plantilla hechos. Script y prompt del anotador 2 preparados; según el autor, su ejecución fue parcial o su validación está pendiente, y no se considera completado |
+| F5: anotador 1, kappa, adjudicación, referencia y congelamiento del conjunto | **Pendiente.** Casos (aprobados por el autor sin cambios el 2026-11-13) y plantilla hechos. Anotador 2 completo y validado técnicamente (48/48 casos, 240/240 posiciones; validación del 2026-11-13). Su calidad lingüística **no** se ha evaluado |
 | F6: línea base A×3 con el modelo real | **Pendiente** (métricas congeladas, puntuación, `reproducir.py` y piloto sí hechos) |
 | F7: B×3, los 5 ataques y el análisis de errores con el modelo real | **Pendiente** |
 
@@ -406,10 +406,14 @@ revisables.
 | **F10** Cierre y entrega | 16 – 17 nov | Prueba en clon limpio, lista de comprobación, entrega; preparar defensa. | `README.md` final, `docs/defensa/` | Lista de comprobación completa; **entrega el 17 nov**. |
 
 > **Actualización 2026-11-13** (el calendario de la tabla se conserva como plan original):
-> - **F5:** casos, plantilla, y script y prompt del anotador 2 hechos. El anotador 2, según el autor, se
->   ejecutó parcialmente o tiene la validación pendiente, y no se considera completado. **Pendientes:**
->   anotador 1, completar o validar el anotador 2 conforme al protocolo (§7.1, paso 6), kappa,
->   adjudicación y congelamiento. La fecha límite del 8 nov ya pasó sin congelar.
+> - **F5:** casos (aprobados por el autor sin cambios el 2026-11-13; ver TODO), plantilla, y script y
+>   prompt del anotador 2 hechos. **Anotador 2:** ejecutado el 2026-11-03 y validado técnicamente el
+>   2026-11-13 (48/48 casos y 240/240 posiciones, sin errores; detalle en TODO y `docs/uso_de_ia.md`).
+>   Hasta esa validación constaba como "ejecución parcial o validación pendiente". Su calidad lingüística
+>   **no** se ha evaluado: la medirán el kappa y la adjudicación. Se ejecutó antes del anotador 1, lo
+>   que es una desviación del orden previsto. **Pendientes:** anotador 1 (archivo creado, sin
+>   etiquetas), kappa, adjudicación, referencia y congelamiento. La fecha límite del 8 nov ya pasó sin
+>   congelar.
 > - **F6:** métricas congeladas, puntuación, `reproducir.py` y piloto hechos. **Pendiente:** A×3.
 > - **F7:** **pendientes** B×3, los 5 ataques y el análisis de errores. El comando único ya existe desde F6.
 > - **Entre F6 y F7 se intercalaron las etapas de integridad 1 y 2** (D18 y D19), no previstas en el

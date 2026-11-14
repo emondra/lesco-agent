@@ -83,13 +83,36 @@ Detalle y responsables en PLAN_PROYECTO.md §7.1.
 - [x] Guía de anotación v1 (`eval/guia_anotacion.md`): etiqueta por palabra; criterio de "difícil" definido antes.
 - [x] **Autor:** aprobar D15, D16 (guía de la tarea), D17 y el plan de F5 (2026-11-01).
 - [x] Redactar 48 casos sin datos personales (25 difíciles previstos, 52 %) y 5 casos de piloto aparte.
-- [ ] **Autor:** revisar y aprobar los casos.
+- [x] **Autor:** revisar y aprobar los casos.
+  - *Registro (2026-11-13):* el autor revisó los 48 casos en 6 grupos de 8 (texto, dificultad
+    prevista y motivos) y los aceptó **sin cambios**, según consta en la sesión. La aprobación
+    corresponde al contenido del commit `f29713d`:
+    `eval/casos.jsonl` SHA-256 `CB3BB55AF9A1764BA839D249512E9F81E0B17EE2184B4609F2B686D19C21E278`;
+    `eval/casos_meta.jsonl` SHA-256 `8B7C8806AB25E7EB4C2C5713A110F28C03A21A217C5F41F18EB7FE4ADD58FD67`;
+    `eval/anotaciones/plantilla.tsv` SHA-256 `A911FE4BA90BCCCDC159DF966A71F25D472AC96033168E83864D13F38BBF8193`.
+    La dificultad sigue siendo **prevista** (25 de 48). Los motivos `variante_sentido` y `sinonimo` se
+    confirman en la adjudicación (`docs/metricas.md` §5).
 - [x] Tokenizador, plantilla con `OMITIR` prellenado (240 palabras, 166 por etiquetar), buscador e instrucciones.
 - [ ] **Autor:** anotador 1 (2–3 horas estimadas).
+  - *Estado (2026-11-13):* `eval/anotaciones/anotador1.tsv` creado como copia exacta de la plantilla
+    aprobada (mismo SHA-256), con 0 de 240 etiquetas. Sin versionar todavía.
 - [x] Script del anotador 2 y prompt v1 (`eval/anotador_llm.py`).
-- [ ] Completar o validar la ejecución independiente del anotador 2 conforme al protocolo, después de que el autor termine su anotación; verificar disponibilidad de una clave válida si es necesario continuar la ejecución.
-  - *Estado (2026-11-13, según el autor):* ejecución parcial o validación pendiente. No se considera
-    completada.
+- [x] Ejecutar el anotador 2 (2026-11-03) y validarlo técnicamente (2026-11-13).
+  - *Validación técnica agregada (2026-11-13):*
+    - 48 de 48 casos con respuesta válida en el primer intento;
+    - 240 de 240 posiciones alineadas con la plantilla;
+    - 0 etiquetas vacías o inválidas y 0 diferencias entre `anotador2.tsv` y el registro de respuestas;
+    - el SHA-256 del prompt de los 48 registros coincide con el del prompt vigente;
+    - modelo declarado en las respuestas de la API: `claude-opus-5-5`.
+
+    Validador: script temporal que solo muestra cifras, con SHA-256
+    `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`. Todavía no está
+    versionado, así que la validación no se puede reproducir solo con el repositorio público.
+  - **Alcance:** es completitud técnica. **No** evalúa la calidad lingüística de las etiquetas; eso lo
+    hacen el kappa y la adjudicación.
+  - **Desviación de orden:** se ejecutó antes del anotador 1, no "después de que el autor termine" como
+    se preveía. Esa secuencia, por sí sola, no demuestra la independencia.
+  - Hasta esta validación constaba como "ejecución parcial o validación pendiente".
 - [x] Script de kappa (todas las palabras y solo contenido) y lista de desacuerdos.
 - [ ] Calcular kappa y adjudicar (registro en `eval/adjudicacion.md`).
 - [ ] Congelar el conjunto el 8 nov (SHA-256 + etiqueta git `eval-v1`).

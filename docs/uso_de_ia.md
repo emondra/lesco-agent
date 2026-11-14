@@ -8,12 +8,15 @@ registro alimenta la declaración de uso de IA del artículo.
 | 2026-10-31 | Claude Code (`claude-opus-5-5`) | Extraer los requisitos de la especificación del proyecto y compararlos con la propuesta inicial; redactar `PLAN_PROYECTO.md`, `README.md` y `TODO.md`. | El autor revisó y aprobó el plan y las decisiones D3, D5, D9 y D11. |
 | 2026-10-31 | Claude Code (búsqueda web) | Buscar fuentes del vocabulario LESCO y estimar el presupuesto de la API. | Cada fuente se abrió y se registró con su URL y fecha en `docs/referencias.md`. El presupuesto es una estimación previa que se recalibrará con trazas. |
 | 2026-11-01 | Claude Code (`claude-opus-5-5`, búsqueda web) | Redactar el borrador de `docs/propuesta_H1.md` y verificar los metadatos de las referencias candidatas. | Metadatos comprobados en las páginas de los editores o de arXiv. La lectura de cada referencia la registra el autor. |
+| 2026-11-03 | `eval/anotador_llm.py` con la API de Claude (modelo declarado en las respuestas: `claude-opus-5-5`) | Anotador 2 (D10): etiquetar las 240 palabras de los 48 casos con la guía v1, el índice del CENAREC y el prompt `eval/prompts/anotador2_v1.md`. | Validación técnica agregada el 2026-11-13. La calidad lingüística queda pendiente del kappa y la adjudicación. Ver la sección "Anotador 2". |
+| 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Presentar los 48 textos del conjunto de evaluación para su revisión, en seis grupos de ocho, y validar técnicamente el anotador 2 con un script que solo muestra cifras. | La aceptación de los 48 textos sin cambios se documentó después en `TODO.md`. Las continuaciones entre grupos constan solo en la sesión y no son autorizaciones independientes verificadas. La validación del anotador 2 se describe en la sección "Anotador 2". |
 | 2026-11-13 | Claude Code (modelo concreto: no consta en la evidencia del proyecto) | Etapas de integridad 1 y 2: vinculación del servidor MCP y del agente al caso (D18), validación documental antes de puntuar (D19), pruebas automatizadas, instrumento de evidencia y documentación técnica. | Ver la sección "Etapas de integridad 1 y 2" más abajo. |
 
 ## Usos previstos (se registrarán al ocurrir)
 
 - Programación del servidor MCP, el agente y los scripts (con pruebas automáticas).
 - Segundo anotador del conjunto de evaluación (`claude-opus-5-5`, autorizado por el profesor).
+  **Ya ejecutado** (2026-11-03). Su trazabilidad está en la sección "Anotador 2".
 - Apoyo de redacción del artículo (el autor revisa cada sección y cada cifra contra las trazas).
 
 **Nunca:** generar entradas del vocabulario LESCO ni referencias bibliográficas.
@@ -111,12 +114,43 @@ tuvieron comparación del árbol sintáctico.**
 
 ### Pendiente de registrar
 
-Este registro no tiene entradas entre el 2026-11-01 y el 2026-11-13. En ese periodo hay commits de
+Salvo la del anotador 2 (2026-11-03), este registro no tiene entradas entre el 2026-11-01 y el 2026-11-13. En ese periodo hay commits de
 programación, anotación y piloto (del `6554a7d` al `e495b06`, del 2026-10-31 al 2026-11-03). El autor
-debe completar qué uso de IA hubo en ellos, incluido el segundo anotador previsto arriba. Este documento
-no lo deduce.
+debe completar qué uso de IA hubo en ellos. Este documento no lo deduce. El segundo anotador
+(2026-11-03) ya se registra en la sección "Anotador 2".
 
 **Discrepancia cronológica pendiente de aclaración.** La fila fechada el 2026-11-01 ya figura en la
 única versión de este archivo registrada en git: el commit `639331d`, fechado el
 2026-10-31 10:02:30 -06:00. No se ha determinado a qué se debe. La fila se conserva sin cambios hasta
 que el autor lo aclare.
+
+## Anotador 2 (ejecución del 2026-11-03, validación del 2026-11-13)
+
+- **Qué se ejecutó:** `eval/anotador_llm.py` (D10, autorizado por el profesor). El prompt de sistema
+  contiene la guía v1, el índice del CENAREC y `eval/prompts/anotador2_v1.md`. El mensaje de cada caso
+  contiene solo su plantilla. Según el código, no recibe las etiquetas del anotador 1 ni salidas del
+  agente. El registro de respuestas declara las fechas del 2026-11-03 de 14:29:10 a 14:32:49. Quién
+  lanzó la ejecución no consta en el repositorio.
+- **Modelo:** `claude-opus-5-5`, según el campo `model` de las 48 respuestas de la API que guardó el
+  script. Es la declaración de la API registrada por el propio script, no una certificación
+  independiente.
+- **Validación técnica agregada (2026-11-13):** la hizo Claude Code con autorización del autor,
+  mediante un script temporal no versionado
+  (SHA-256 `D591098139B69E7CF150025CDBC8663E3D29F98E042EFDEAADC2C3DB4ECB1B13`) que solo lee y solo
+  muestra cifras. Resultado:
+  - 48 de 48 casos válidos en el primer intento;
+  - 240 de 240 posiciones alineadas con la plantilla;
+  - 0 etiquetas vacías o inválidas y 0 diferencias entre el TSV y el registro;
+  - el SHA-256 del prompt es igual al vigente en los 48 registros.
+
+  Durante la validación no se mostró ninguna etiqueta, palabra ni respuesta.
+- **Reproducibilidad de la validación:** el SHA-256 del script queda registrado, pero el script
+  **todavía no está versionado**. Por eso la validación **no** se puede reproducir solo con el
+  repositorio público. Además, los archivos del anotador 2 están ignorados por git y no se publican.
+- **Alcance:**
+  - es **completitud técnica**: la calidad lingüística de las etiquetas **no** se ha evaluado; la
+    medirán el kappa frente al anotador 1 y la adjudicación;
+  - el anotador 2 se ejecutó **antes** que el anotador 1, lo que es una desviación del orden previsto.
+    Esa secuencia, por sí sola, no demuestra la independencia.
+- **Archivos:** `eval/anotaciones/anotador2.tsv` y `anotador2_respuestas.jsonl` están ignorados por
+  git y no se publican.
