@@ -1,2 +1,5 @@
 # Los datos se versionan con LF para que su SHA-256 sea estable en cualquier sistema.
 data/** text eol=lf
+# Los registros de pruebas se versionan byte a byte, sin conversión de finales de línea,
+# para que sus SHA-256 coincidan en cualquier clon (ver evidencia/registrar_pruebas.py).
+evidencia/pruebas/** -text

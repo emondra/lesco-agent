@@ -22,7 +22,13 @@ RAIZ = Path(__file__).resolve().parent
 sys.path.insert(0, str(RAIZ / "eval"))
 
 from puntuar import (METRICAS_CALIDAD, METRICAS_PROCESO, PRECIOS, REMUESTREOS, SEMILLA,  # noqa: E402
-                     agregar, diferencia_pareada, evaluar)
+                     ErrorVinculacion, agregar, diferencia_pareada, evaluar)
+
+# Conjunto esperado del experimento. No hay manifiesto: se usan los mismos valores por defecto que
+# agente/ejecutar_casos.py (--configs A B, --repeticiones 3), que coinciden con docs/metricas.md §4.
+# tests/test_puntuar.py comprueba que ambas fuentes de código no diverjan.
+CONFIGURACIONES_PROTOCOLO = ["A", "B"]
+REPETICIONES_PROTOCOLO = 3
 
 
 def fmt(v, dec=3):
@@ -49,7 +55,13 @@ def main() -> int:
     ap.add_argument("--experimento", default="experimento")
     ap.add_argument("--referencia", type=Path, default=RAIZ / "eval" / "referencia.jsonl")
     ap.add_argument("--salida", type=Path, default=RAIZ / "resultados" / "tablas")
+    ap.add_argument("--configs", nargs="+", default=CONFIGURACIONES_PROTOCOLO,
+                    help="configuraciones esperadas (por defecto, las de ejecutar_casos.py)")
+    ap.add_argument("--repeticiones", type=int, default=REPETICIONES_PROTOCOLO,
+                    help="repeticiones esperadas por configuración (por defecto, las de ejecutar_casos.py)")
     a = ap.parse_args()
+    if a.repeticiones < 1:
+        ap.error("--repeticiones debe ser 1 o más")
 
     if not a.referencia.exists():
         print(f"No existe {a.referencia}: primero se construye la referencia (eval/construir_referencia.py).")
@@ -58,7 +70,14 @@ def main() -> int:
         print(f"No hay trazas en trazas/{a.experimento}/.")
         return 2
     referencia = {r["caso_id"]: r for r in map(json.loads, a.referencia.read_text(encoding="utf-8").splitlines()) if r}
-    filas = evaluar(a.experimento, referencia)
+    try:
+        filas = evaluar(a.experimento, referencia, configuraciones=a.configs, repeticiones=a.repeticiones)
+    except ErrorVinculacion as e:
+        print("No se generan tablas: hay ejecuciones esperadas sin traza o sin consistencia documental "
+              "con su caso:")
+        for linea in e.args[0]:
+            print(f"  - {linea}")
+        return 3
     if not filas:
         print("No se encontraron ejecuciones que coincidan con la referencia.")
         return 2

@@ -1,7 +1,9 @@
 """Pruebas de extremo a extremo: el servidor MCP real, hablado por stdio con el cliente del agente."""
 
 import json
+import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -109,6 +111,103 @@ class TestServidorMCP(unittest.TestCase):
     def test_metodo_desconocido(self):
         with self.assertRaises(ErrorMCP):
             self.cli._pedir("resources/list")
+
+
+class TestServidorVinculado(unittest.TestCase):
+    """Modo vinculado (--caso): el servidor solo entrega y guarda el caso autorizado al iniciar."""
+
+    TEXTOS = {"c1": "Debe pagar en la caja.", "c2": "Necesita firmar la factura."}
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp(prefix="lesco_vinculado_"))
+        cls.casos = cls.tmp / "casos.jsonl"
+        cls.casos.write_text("".join(json.dumps({"caso_id": c, "texto": t}, ensure_ascii=False) + "\n"
+                                     for c, t in cls.TEXTOS.items()), encoding="utf-8")
+        cls.salidas = cls.tmp / "salidas"
+        cls.cli = ClienteMCP("lesco", [sys.executable, "mcp_server/servidor_lesco.py",
+                                       "--casos", str(cls.casos), "--caso", "c1",
+                                       "--salidas", str(cls.salidas)], cwd=str(RAIZ))
+        cls.cli.iniciar()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.cli.cerrar()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def llamar(self, nombre, args):
+        texto, es_error = self.cli.llamar(nombre, args)
+        return (texto if es_error else json.loads(texto)), es_error
+
+    def guardar(self, caso_id):
+        return self.llamar("guardar_resultado", {"caso_id": caso_id, "texto_fuente": self.TEXTOS["c1"],
+                                                 "secuencia": ["CENAREC-296", "CENAREC-195"]})
+
+    def archivos(self):
+        return {p.name for p in self.salidas.glob("*")} if self.salidas.exists() else set()
+
+    def test_p1_guarda_caso_autorizado(self):
+        datos, es_error = self.guardar("c1")
+        self.assertFalse(es_error, datos)
+        self.assertEqual(datos["caso_id"], "c1")
+        guardado = json.loads((self.salidas / "c1.json").read_text(encoding="utf-8"))
+        self.assertEqual(guardado["glosas"], ["DEBER", "PAGAR"])
+
+    def test_p2_transcripcion_del_caso_autorizado(self):
+        datos, es_error = self.llamar("obtener_transcripcion", {"caso_id": "c1"})
+        self.assertFalse(es_error)
+        self.assertEqual(datos, {"caso_id": "c1", "transcripcion": self.TEXTOS["c1"]})
+
+    def test_n1_rechaza_guardar_otro_caso(self):
+        for caso in ("c2", "C1"):   # C1: en Windows sería el mismo archivo que c1.json
+            with self.subTest(caso=caso):
+                texto, es_error = self.guardar(caso)
+                self.assertTrue(es_error)
+                self.assertIn("solo puede guardar el caso 'c1'", texto)
+                self.assertIn("No se guardó nada", texto)
+        self.assertLessEqual(self.archivos(), {"c1.json"})
+
+    def test_n2_rechaza_guardar_caso_inexistente(self):
+        texto, es_error = self.guardar("c999")
+        self.assertTrue(es_error)
+        self.assertIn("solo puede guardar el caso 'c1'", texto)
+        self.assertNotIn("c999.json", self.archivos())
+
+    def test_n3_no_entrega_transcripcion_de_otro_caso(self):
+        texto, es_error = self.llamar("obtener_transcripcion", {"caso_id": "c2"})
+        self.assertTrue(es_error)
+        self.assertIn("no hay transcripción para el caso 'c2'", texto)
+        self.assertNotIn(self.TEXTOS["c2"], texto)
+
+    def test_n4_no_arranca_con_caso_invalido_o_inexistente(self):
+        entorno = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+        casos = ["--casos", str(self.casos)]
+        situaciones = [
+            (casos + ["--caso", "c999"], "no existe en el archivo de casos"),
+            (casos + ["--caso", "../x"], "--caso inválido"),
+            (casos + ["--caso", ""], "--caso inválido"),
+            (casos + ["--caso", "x" * 41], "--caso inválido"),
+            (["--caso", "c1"], "--caso exige --casos"),
+        ]
+        for args, mensaje in situaciones:
+            with self.subTest(args=args):
+                r = subprocess.run([sys.executable, "mcp_server/servidor_lesco.py", *args,
+                                    "--salidas", str(self.tmp / "salidas_n4")],
+                                   cwd=str(RAIZ), input="", capture_output=True, text=True,
+                                   encoding="utf-8", env=entorno, timeout=30)
+                self.assertEqual(r.returncode, 2, r.stderr)
+                self.assertIn(mensaje, r.stderr)
+                self.assertEqual(r.stdout, "")    # no habló el protocolo: no llegó a arrancar
+        self.assertFalse((self.tmp / "salidas_n4").exists())
+
+    def test_n5_mantiene_rechazo_de_formato_invalido(self):
+        for caso in ["../fuera", "a/b", "C:\\x", ".oculto", "x" * 41, ""]:
+            with self.subTest(caso=caso):
+                texto, es_error = self.guardar(caso)
+                self.assertTrue(es_error)
+                self.assertIn("'caso_id' inválido", texto)    # el formato se valida antes que la vinculación
+                self.assertNotIn("solo puede guardar", texto)
+        self.assertEqual(list(self.tmp.glob("fuera*")), [])
 
 
 if __name__ == "__main__":

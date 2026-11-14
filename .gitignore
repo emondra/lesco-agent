@@ -225,3 +225,11 @@ trazas/humo/
 trazas/demo/
 resultados/salidas/
 resultados/humo/
+# LESCO-Agent: originales privados y candidatas del registrador de evidencia (nunca se publican)
+/evidencia/privado/
+# LESCO-Agent: documentos académicos privados
+/Solicitud/
+
+# LESCO-Agent: evaluación independiente del segundo anotador
+/eval/anotaciones/anotador2.tsv
+/eval/anotaciones/anotador2_respuestas.jsonl

@@ -12,12 +12,15 @@ Uso:
     python agente/agente.py --config agente/configs/demo.json --simulado --caso demo-001
     python agente/agente.py --config agente/configs/B.json --caso c001 --casos eval/casos.jsonl
 
+--caso es obligatorio: no hay caso implícito.
+
 La clave se lee de la variable de entorno ANTHROPIC_API_KEY o de un archivo .env en la raíz
 del repositorio (ignorado por git). Nunca se escribe en la traza.
 
 Cambios respecto del kit: objetivo por caso, instrucciones compuestas, rutas de casos y
 salidas por ejecución, reintentos ante errores transitorios de la API, motivo de parada
-explícito para cada stop_reason y metadatos del experimento en la traza.
+explícito para cada stop_reason, metadatos del experimento en la traza y vinculación de cada
+servidor MCP al caso de la ejecución (--caso {caso}): sin ella, el agente no se ejecuta.
 
 Sin dependencias externas: la API se llama con urllib, igual que MCP se habla a mano.
 """
@@ -27,6 +30,7 @@ import fnmatch
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -40,12 +44,61 @@ from mcp_cliente import ClienteMCP, ErrorMCP  # noqa: E402
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
 SEPARADOR = "__"   # servidor__herramienta: evita choques de nombres entre servidores
+# Mismo patrón que PATRON_CASO de mcp_server/servidor_lesco.py, aplicado con fullmatch: el valor
+# completo debe coincidir (se rechaza también un salto de línea final). El caso nombra el archivo de
+# traza, así que se valida al recibirlo, antes de construir cualquier ruta.
+PATRON_CASO = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,39}")
+MARCADOR_CASO = "{caso}"
 
 
 def objetivo_para(caso_id: str) -> str:
     """Mismo objetivo para las configuraciones A y B: solo cambia el caso."""
     return (f"Caso {caso_id}. Obtén la transcripción de este caso, represéntala como una secuencia "
             f"de señas LESCO del diccionario disponible y guarda el resultado con caso_id={caso_id}.")
+
+
+def caso_valido(texto: str) -> str:
+    """Tipo de argparse para --caso: rechaza vacíos, rutas, espacios, saltos de línea y otros caracteres."""
+    if not isinstance(texto, str) or not PATRON_CASO.fullmatch(texto):
+        raise argparse.ArgumentTypeError(f"caso_id inválido {texto!r}: use de 1 a 40 letras, dígitos, "
+                                         "'_' o '-', empezando por letra o dígito.")
+    return texto
+
+
+def problemas_de_vinculacion(config: dict) -> list[str]:
+    """Motivos por los que la configuración no vincula cada servidor MCP al caso de la ejecución.
+
+    Cada comando debe contener exactamente una pareja '--caso', '{caso}' y ninguna otra forma de pasar
+    el caso: sin '--caso' repetidos, sin '--caso=<valor>', sin valor fijo o vacío y sin el marcador
+    '{caso}' en ningún otro argumento. Lista vacía = configuración válida."""
+    servidores = config.get("servidores")
+    if not isinstance(servidores, list) or not servidores:
+        return ["la configuración no declara servidores MCP"]
+    problemas = []
+    for i, srv in enumerate(servidores):
+        nombre = srv.get("nombre", f"#{i}") if isinstance(srv, dict) else f"#{i}"
+        comando = srv.get("comando") if isinstance(srv, dict) else None
+        if not isinstance(comando, list) or not all(isinstance(c, str) for c in comando):
+            problemas.append(f"{nombre}: 'comando' debe ser una lista de textos")
+            continue
+        posiciones = [j for j, c in enumerate(comando) if c == "--caso"]
+        con_igual = [c for c in comando if c.startswith("--caso=")]
+        marcadores = [j for j, c in enumerate(comando) if MARCADOR_CASO in c]
+        if con_igual:
+            problemas.append(f"{nombre}: no se admite la forma '--caso=<valor>'")
+        if len(posiciones) != 1:
+            problemas.append(f"{nombre}: debe tener exactamente un '--caso' (tiene {len(posiciones)})")
+        elif posiciones[0] + 1 >= len(comando) or comando[posiciones[0] + 1] != MARCADOR_CASO:
+            problemas.append(f"{nombre}: '--caso' debe ir seguido exactamente de '{MARCADOR_CASO}' "
+                             "(no de un valor fijo ni vacío)")
+        if len(posiciones) == 1:
+            esperado = [posiciones[0] + 1]
+        else:
+            esperado = []
+        if marcadores and marcadores != esperado:
+            problemas.append(f"{nombre}: el marcador '{MARCADOR_CASO}' aparece fuera de la pareja "
+                             f"'--caso {MARCADOR_CASO}'")
+    return problemas
 
 
 def cargar_clave() -> str | None:
@@ -246,7 +299,11 @@ def resumen_bloques(contenido: list) -> str:
 
 # ===================================================================== agente
 def ejecutar(args) -> dict:
+    if not isinstance(args.caso, str) or not PATRON_CASO.fullmatch(args.caso):   # también si no viene de argparse
+        raise ValueError(f"caso_id inválido {args.caso!r}")
     config = json.loads(Path(args.config).read_text(encoding="utf-8"))
+    # Validación de la vinculación ANTES de crear la traza y de arrancar cualquier proceso.
+    problemas = problemas_de_vinculacion(config)
     politica = Politica(json.loads((RAIZ / config["politica"]).read_text(encoding="utf-8")))
     archivos = config["instrucciones"]
     archivos = archivos if isinstance(archivos, list) else [archivos]
@@ -256,18 +313,30 @@ def ejecutar(args) -> dict:
     carpeta_trazas = Path(args.trazas) if args.trazas else RAIZ / config.get("carpeta_trazas", "trazas")
     traza = Traza(carpeta_trazas, f"{config.get('nombre', 'agente')}_{args.caso}")
     rutas = {"salidas": str(Path(args.salidas or RAIZ / config.get("carpeta_salidas", "resultados/salidas"))),
-             "casos": str(Path(args.casos or RAIZ / config.get("casos", "eval/casos.jsonl")))}
+             "casos": str(Path(args.casos or RAIZ / config.get("casos", "eval/casos.jsonl"))),
+             "caso": args.caso}
+
+    # ---- 0. falla cerrado: la traza registra el rechazo; no se ha arrancado ningún proceso
+    if problemas:
+        motivo = "error al conectar: servidor MCP sin vincular al caso: " + "; ".join(problemas)
+        print(f"\nERROR: {motivo}")
+        traza.evento("fin", motivo=motivo, pasos=0, tokens_entrada=0, tokens_salida=0,
+                     duracion_s=0, llamadas=[], respuesta_final="")
+        traza.cerrar()
+        return {"codigo": 2, "traza": traza.ruta, "motivo": motivo}
 
     # ---- 1. conectar servidores y descubrir herramientas
     print("\n== Conectando servidores MCP")
     clientes: dict[str, ClienteMCP] = {}
-    catalogo, ocultas = [], []
+    catalogo, ocultas, servidores = [], [], []
     try:
         for srv in config["servidores"]:
             comando = [sys.executable if c == "python" else c.format(**rutas) for c in srv["comando"]]
             cli = ClienteMCP(srv["nombre"], comando, cwd=str(RAIZ))
             info = cli.iniciar()
             clientes[srv["nombre"]] = cli
+            servidores.append({"nombre": srv["nombre"], "version": info.get("serverInfo", {}).get("version"),
+                               "caso_vinculado": args.caso})
             herramientas = cli.listar_herramientas()
             print(f"   {srv['nombre']}: {info.get('serverInfo', {}).get('name')} "
                   f"· {len(herramientas)} herramientas")
@@ -300,7 +369,7 @@ def ejecutar(args) -> dict:
                  instrucciones=archivos,
                  sha256_instrucciones=hashlib.sha256(instrucciones.encode("utf-8")).hexdigest(),
                  politica=config["politica"], esfuerzo=config.get("esfuerzo"),
-                 envolver_resultados=config.get("envolver_resultados", True))
+                 envolver_resultados=config.get("envolver_resultados", True), servidores=servidores)
 
     # ---- 2. modelo
     try:
@@ -425,7 +494,8 @@ def ejecutar(args) -> dict:
 def argumentos(lista: list[str] | None = None) -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="LESCO-Agent (adaptado del agente de la clase 3)")
     ap.add_argument("--config", default=str(AQUI / "configs" / "demo.json"))
-    ap.add_argument("--caso", default="demo-001", help="caso_id a procesar")
+    ap.add_argument("--caso", required=True, type=caso_valido,
+                    help="caso_id a procesar (obligatorio; el servidor MCP queda vinculado a él)")
     ap.add_argument("--casos", default=None, help="archivo JSONL de casos (sobrescribe la configuración)")
     ap.add_argument("--salidas", default=None, help="carpeta de resultados (sobrescribe la configuración)")
     ap.add_argument("--trazas", default=None, help="carpeta de trazas (sobrescribe la configuración)")

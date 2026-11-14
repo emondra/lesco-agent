@@ -13,10 +13,15 @@ formato de IDs, existencia de cada ID y la ruta de escritura, y rechaza con mens
 que dicen cómo corregir.
 
 Uso:
-    python mcp_server/servidor_lesco.py [--casos RUTA_JSONL] [--salidas DIR] [--indice RUTA_TSV]
+    python mcp_server/servidor_lesco.py [--casos RUTA_JSONL] [--caso CASO_ID] [--salidas DIR] [--indice RUTA_TSV]
 
 El archivo de casos tiene un objeto JSON por línea con al menos "caso_id" y "texto";
 el servidor ignora cualquier otro campo (las etiquetas de referencia nunca se exponen).
+
+Con --caso, el servidor queda vinculado a ese único caso: solo entrega su transcripción y
+solo guarda su resultado. El agente arranca un servidor por ejecución con el caso del
+objetivo, así que una ejecución no puede escribir el resultado de otro caso. --caso exige
+--casos y que el caso exista en él; si no, el servidor no arranca.
 
 Sin dependencias externas, como el kit de la clase 3. Los registros van a stderr;
 stdout es solo para el protocolo.
@@ -33,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lexico import RAIZ, RUTA_INDICE, CONTROL, ErrorEntrada, Lexico  # noqa: E402
 
 NOMBRE = "lesco-cenarec"
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 VERSIONES_PROTOCOLO = ("2025-06-18", "2025-03-26", "2024-11-05")
 PATRON_CASO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$")
 MAX_TEXTO_FUENTE = 500
@@ -145,10 +150,20 @@ def cargar_casos(ruta: Path | None) -> dict[str, str]:
 
 
 class Servidor:
-    def __init__(self, lexico: Lexico, dir_salidas: Path, casos: dict[str, str] | None = None):
+    def __init__(self, lexico: Lexico, dir_salidas: Path, casos: dict[str, str] | None = None,
+                 caso_autorizado: str | None = None):
         self.lexico = lexico
         self.dir_salidas = dir_salidas.resolve()
         self.casos = casos or {}
+        self.caso_autorizado = caso_autorizado
+        if caso_autorizado is not None:
+            if not isinstance(caso_autorizado, str) or not PATRON_CASO.match(caso_autorizado):
+                raise ValueError(f"--caso inválido: {caso_autorizado!r}. Use de 1 a 40 letras, dígitos, "
+                                 "'_' o '-', empezando por letra o dígito.")
+            if caso_autorizado not in self.casos:
+                raise ValueError(f"--caso {caso_autorizado!r} no existe en el archivo de casos.")
+            # Vinculado: solo este caso es visible y guardable durante toda la vida del servidor.
+            self.casos = {caso_autorizado: self.casos[caso_autorizado]}
 
     # ------------------------------------------------------------------ herramientas
     def _argumentos(self, nombre: str, args) -> dict:
@@ -188,6 +203,9 @@ class Servidor:
         if not isinstance(caso_id, str) or not PATRON_CASO.match(caso_id):
             raise ErrorEntrada("'caso_id' inválido: use de 1 a 40 letras, dígitos, '_' o '-', "
                                "empezando por letra o dígito (sin rutas ni extensiones).")
+        if self.caso_autorizado is not None and caso_id != self.caso_autorizado:
+            raise ErrorEntrada(f"este servidor solo puede guardar el caso '{self.caso_autorizado}' "
+                               "(autorizado al iniciar el servidor). No se guardó nada.")
         if not isinstance(texto, str) or not texto.strip() or len(texto) > MAX_TEXTO_FUENTE:
             raise ErrorEntrada(f"'texto_fuente' debe tener entre 1 y {MAX_TEXTO_FUENTE} caracteres.")
         if CONTROL.search(texto.replace("\n", " ")):
@@ -272,9 +290,17 @@ def main() -> None:
     ap.add_argument("--salidas", type=Path, default=RAIZ / "resultados" / "salidas")
     ap.add_argument("--indice", type=Path, default=RUTA_INDICE)
     ap.add_argument("--casos", type=Path, default=None)
+    ap.add_argument("--caso", default=None,
+                    help="vincula el servidor a este caso: solo entrega y guarda ese caso (exige --casos)")
     a = ap.parse_args()
-    servidor = Servidor(Lexico(a.indice), a.salidas, cargar_casos(a.casos))
+    if a.caso is not None and a.casos is None:
+        ap.error("--caso exige --casos")
+    try:
+        servidor = Servidor(Lexico(a.indice), a.salidas, cargar_casos(a.casos), a.caso)
+    except ValueError as e:
+        ap.error(str(e))
     print(f"[{NOMBRE}] listo: {len(servidor.lexico)} entradas, {len(servidor.casos)} casos; "
+          f"caso autorizado: {servidor.caso_autorizado or 'ninguno (sin vincular)'}; "
           f"salidas en {servidor.dir_salidas}", file=sys.stderr)
 
     entrada = open(sys.stdin.fileno(), encoding="utf-8", closefd=False)

@@ -23,6 +23,8 @@
         "mcp_server/servidor_lesco.py",
         "--casos",
         "{casos}",
+        "--caso",
+        "{caso}",
         "--salidas",
         "{salidas}"
       ]
