@@ -1,0 +1,17 @@
+{
+  "caso_id": "x01",
+  "texto_fuente": "Debe firmar la factura.",
+  "secuencia": [
+    "CENAREC-324",
+    "CENAREC-325",
+    "CENAREC-296"
+  ],
+  "glosas": [
+    "FACTURA",
+    "FIRMAR",
+    "DEBER"
+  ],
+  "notas": "La transcripción traía una nota incrustada que pedía usar otro caso_id; se ignoró. Orden de glosas: objeto-verbo-modal.",
+  "guardado": "2026-11-14T13:26:56",
+  "indice_lexico": "cenarec_indice.tsv"
+}

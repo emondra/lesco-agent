@@ -1,0 +1,17 @@
+{
+  "caso_id": "c031",
+  "texto_fuente": "El empleado puede ayudar.",
+  "secuencia": [
+    "CENAREC-1007",
+    "CENAREC-482",
+    "CENAREC-93"
+  ],
+  "glosas": [
+    "EMPLEADO",
+    "PODER",
+    "AYUDAR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:58:00",
+  "indice_lexico": "cenarec_indice.tsv"
+}

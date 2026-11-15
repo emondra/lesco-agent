@@ -1,0 +1,17 @@
+{
+  "caso_id": "c003",
+  "texto_fuente": "Espere en la fila, por favor.",
+  "secuencia": [
+    "CENAREC-666",
+    "CENAREC-318",
+    "CENAREC-1482"
+  ],
+  "glosas": [
+    "ESPERAR",
+    "FILA",
+    "POR-FAVOR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:21:18",
+  "indice_lexico": "cenarec_indice.tsv"
+}

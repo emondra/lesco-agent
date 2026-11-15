@@ -1,0 +1,31 @@
+{
+  "caso_id": "c048",
+  "texto_fuente": "Si no puede venir el lunes, debe avisar a la oficina antes del viernes.",
+  "secuencia": [
+    "CENAREC-1483",
+    "CENAREC-1208",
+    "CENAREC-482",
+    "CENAREC-625",
+    "CENAREC-382",
+    "CENAREC-296",
+    "CENAREC-1405",
+    "CENAREC-1685",
+    "CENAREC-1198",
+    "CENAREC-621"
+  ],
+  "glosas": [
+    "SÍ",
+    "NO",
+    "PODER",
+    "VENIR",
+    "LUNES",
+    "DEBER",
+    "AVISAR",
+    "OFICINA",
+    "ANTES",
+    "VIERNES"
+  ],
+  "notas": "\"Si\" condicional: la única entrada exacta es SÍ (afirmación); se usó por falta de otra.",
+  "guardado": "2026-11-14T12:49:40",
+  "indice_lexico": "cenarec_indice.tsv"
+}

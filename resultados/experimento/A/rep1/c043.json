@@ -1,0 +1,17 @@
+{
+  "caso_id": "c043",
+  "texto_fuente": "Debe cambiar el horario.",
+  "secuencia": [
+    "CENAREC-350",
+    "CENAREC-909",
+    "CENAREC-296"
+  ],
+  "glosas": [
+    "HORARIO",
+    "CAMBIAR",
+    "DEBER"
+  ],
+  "notas": "Orden OSV típico de LESCO: HORARIO CAMBIAR DEBER.",
+  "guardado": "2026-11-14T12:32:55",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,17 @@
+{
+  "caso_id": "c009",
+  "texto_fuente": "¿Dónde atiende el director?",
+  "secuencia": [
+    "CENAREC-232",
+    "CENAREC-98",
+    "CENAREC-23"
+  ],
+  "glosas": [
+    "DIRECTOR",
+    "ATENDER",
+    "DÓNDE"
+  ],
+  "notas": "Orden con el interrogativo al final: DIRECTOR ATENDER DÓNDE.",
+  "guardado": "2026-11-14T12:51:44",
+  "indice_lexico": "cenarec_indice.tsv"
+}

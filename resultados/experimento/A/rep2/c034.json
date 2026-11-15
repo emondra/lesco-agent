@@ -1,0 +1,17 @@
+{
+  "caso_id": "c034",
+  "texto_fuente": "Debe aprobar el examen.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-1214",
+    "CENAREC-1558"
+  ],
+  "glosas": [
+    "DEBER",
+    "APROBAR",
+    "EXAMEN"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:45:23",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,17 @@
+{
+  "caso_id": "c045",
+  "texto_fuente": "Escriba un correo electrónico al director.",
+  "secuencia": [
+    "CENAREC-1206",
+    "CENAREC-1227",
+    "CENAREC-232"
+  ],
+  "glosas": [
+    "ESCRIBIR",
+    "CORREO-ELECTRÓNICO",
+    "DIRECTOR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T13:01:43",
+  "indice_lexico": "cenarec_indice.tsv"
+}

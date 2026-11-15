@@ -1,0 +1,17 @@
+{
+  "caso_id": "c036",
+  "texto_fuente": "El intérprete viene el viernes.",
+  "secuencia": [
+    "CENAREC-1629",
+    "CENAREC-625",
+    "CENAREC-621"
+  ],
+  "glosas": [
+    "INTÉRPRETE",
+    "VENIR",
+    "VIERNES"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:45:51",
+  "indice_lexico": "cenarec_indice.tsv"
+}

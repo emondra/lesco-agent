@@ -1,0 +1,17 @@
+{
+  "caso_id": "c038",
+  "texto_fuente": "Necesito un certificado nuevo.",
+  "secuencia": [
+    "CENAREC-440",
+    "CENAREC-161",
+    "CENAREC-1702"
+  ],
+  "glosas": [
+    "NECESITAR",
+    "CERTIFICADO",
+    "NUEVO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:46:19",
+  "indice_lexico": "cenarec_indice.tsv"
+}

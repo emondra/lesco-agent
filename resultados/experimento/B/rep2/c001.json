@@ -1,0 +1,17 @@
+{
+  "caso_id": "c001",
+  "texto_fuente": "Debe firmar el certificado.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-325",
+    "CENAREC-161"
+  ],
+  "glosas": [
+    "DEBER",
+    "FIRMAR",
+    "CERTIFICADO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:36:24",
+  "indice_lexico": "cenarec_indice.tsv"
+}

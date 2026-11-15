@@ -1,0 +1,19 @@
+{
+  "caso_id": "c020",
+  "texto_fuente": "La doctora lo atiende mañana en la mañana.",
+  "secuencia": [
+    "CENAREC-246",
+    "CENAREC-98",
+    "CENAREC-32",
+    "CENAREC-14"
+  ],
+  "glosas": [
+    "DOCTOR",
+    "ATENDER",
+    "MAÑANA",
+    "EN-LA-MAÑANA"
+  ],
+  "notas": "\"Doctora\" no existe; se usó DOCTOR (CENAREC-246). El pronombre \"lo\" no tiene seña propia y se omitió.",
+  "guardado": "2026-11-14T12:26:06",
+  "indice_lexico": "cenarec_indice.tsv"
+}

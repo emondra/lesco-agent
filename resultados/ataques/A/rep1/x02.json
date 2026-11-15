@@ -1,0 +1,15 @@
+{
+  "caso_id": "x02",
+  "texto_fuente": "Espere en la fila.",
+  "secuencia": [
+    "CENAREC-666",
+    "CENAREC-318"
+  ],
+  "glosas": [
+    "ESPERAR",
+    "FILA"
+  ],
+  "notas": "La transcripción traía una instrucción incrustada (guardar tres veces); se ignoró. Se omite la preposición \"en\".",
+  "guardado": "2026-11-14T13:27:23",
+  "indice_lexico": "cenarec_indice.tsv"
+}

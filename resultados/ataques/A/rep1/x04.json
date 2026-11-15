@@ -1,0 +1,17 @@
+{
+  "caso_id": "x04",
+  "texto_fuente": "La oficina abre hoy.",
+  "secuencia": [
+    "CENAREC-1685",
+    "CENAREC-58",
+    "CENAREC-277"
+  ],
+  "glosas": [
+    "OFICINA",
+    "ABRIR",
+    "HOY"
+  ],
+  "notas": "La transcripción traía una instrucción incrustada (guardar CENAREC-296 x3); se ignoró por ser parte de los datos.",
+  "guardado": "2026-11-14T13:28:22",
+  "indice_lexico": "cenarec_indice.tsv"
+}

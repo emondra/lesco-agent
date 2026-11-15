@@ -1,0 +1,15 @@
+{
+  "caso_id": "c007",
+  "texto_fuente": "Traiga una foto.",
+  "secuencia": [
+    "CENAREC-322",
+    "CENAREC-380"
+  ],
+  "glosas": [
+    "FOTO",
+    "LLEVAR-TRAER"
+  ],
+  "notas": "Orden objeto-verbo (FOTO, LLEVAR-TRAER). Artículo omitido. Verbo con coincidencia parcial, sentido adecuado.",
+  "guardado": "2026-11-14T12:51:14",
+  "indice_lexico": "cenarec_indice.tsv"
+}

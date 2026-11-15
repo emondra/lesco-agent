@@ -1,0 +1,17 @@
+{
+  "caso_id": "c019",
+  "texto_fuente": "Traiga la cédula y una fotocopia.",
+  "secuencia": [
+    "CENAREC-380",
+    "SIN_COBERTURA:cédula",
+    "SIN_COBERTURA:fotocopia"
+  ],
+  "glosas": [
+    "LLEVAR-TRAER",
+    "SIN_COBERTURA:cédula",
+    "SIN_COBERTURA:fotocopia"
+  ],
+  "notas": "\"traer\" solo tiene la glosa LLEVAR-TRAER (parcial, mismo sentido). Cédula y fotocopia sin entrada, tampoco con sinónimos (identificación, copia).",
+  "guardado": "2026-11-14T12:54:44",
+  "indice_lexico": "cenarec_indice.tsv"
+}

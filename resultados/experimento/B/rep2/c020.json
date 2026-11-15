@@ -1,0 +1,19 @@
+{
+  "caso_id": "c020",
+  "texto_fuente": "La doctora lo atiende mañana en la mañana.",
+  "secuencia": [
+    "SIN_COBERTURA:doctora",
+    "CENAREC-98",
+    "CENAREC-32",
+    "CENAREC-14"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:doctora",
+    "ATENDER",
+    "MAÑANA",
+    "EN-LA-MAÑANA"
+  ],
+  "notas": "\"doctora\" sin entrada; el sinónimo \"médico\" tampoco existe.",
+  "guardado": "2026-11-14T12:41:35",
+  "indice_lexico": "cenarec_indice.tsv"
+}

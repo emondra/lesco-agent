@@ -1,0 +1,19 @@
+{
+  "caso_id": "c017",
+  "texto_fuente": "Pregunte en la ventanilla número tres.",
+  "secuencia": [
+    "CENAREC-1292",
+    "SIN_COBERTURA:ventanilla",
+    "CENAREC-445",
+    "CENAREC-1700"
+  ],
+  "glosas": [
+    "PREGUNTAR",
+    "SIN_COBERTURA:ventanilla",
+    "NÚMERO",
+    "TRES"
+  ],
+  "notas": "\"Ventanilla\" no está en el diccionario; \"ventana\" es otro concepto, así que se marcó SIN_COBERTURA.",
+  "guardado": "2026-11-14T12:53:59",
+  "indice_lexico": "cenarec_indice.tsv"
+}

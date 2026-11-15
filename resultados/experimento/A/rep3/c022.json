@@ -1,0 +1,17 @@
+{
+  "caso_id": "c022",
+  "texto_fuente": "No tiene que pagar nada.",
+  "secuencia": [
+    "CENAREC-1208",
+    "CENAREC-195",
+    "CENAREC-124"
+  ],
+  "glosas": [
+    "NO",
+    "PAGAR",
+    "NADA"
+  ],
+  "notas": "\"Tener que\" no está en el diccionario; se omitió como perífrasis de obligación. Se eligió NO (1208) entre varias variantes.",
+  "guardado": "2026-11-14T12:55:30",
+  "indice_lexico": "cenarec_indice.tsv"
+}

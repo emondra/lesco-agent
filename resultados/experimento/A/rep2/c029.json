@@ -1,0 +1,15 @@
+{
+  "caso_id": "c029",
+  "texto_fuente": "Informe al empleado.",
+  "secuencia": [
+    "CENAREC-1019",
+    "CENAREC-1007"
+  ],
+  "glosas": [
+    "INFORMAR",
+    "EMPLEADO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:44:03",
+  "indice_lexico": "cenarec_indice.tsv"
+}

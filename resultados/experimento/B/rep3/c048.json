@@ -1,0 +1,31 @@
+{
+  "caso_id": "c048",
+  "texto_fuente": "Si no puede venir el lunes, debe avisar a la oficina antes del viernes.",
+  "secuencia": [
+    "SIN_COBERTURA:si",
+    "CENAREC-1208",
+    "CENAREC-482",
+    "CENAREC-625",
+    "CENAREC-382",
+    "CENAREC-296",
+    "CENAREC-1405",
+    "CENAREC-1685",
+    "CENAREC-1198",
+    "CENAREC-621"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:si",
+    "NO",
+    "PODER",
+    "VENIR",
+    "LUNES",
+    "DEBER",
+    "AVISAR",
+    "OFICINA",
+    "ANTES",
+    "VIERNES"
+  ],
+  "notas": "\"Si\" condicional: el diccionario solo tiene SÍ (afirmación), distinto sentido; se marcó SIN_COBERTURA.",
+  "guardado": "2026-11-14T13:02:50",
+  "indice_lexico": "cenarec_indice.tsv"
+}

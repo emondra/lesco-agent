@@ -1,0 +1,17 @@
+{
+  "caso_id": "c046",
+  "texto_fuente": "Pida ayuda al intérprete.",
+  "secuencia": [
+    "CENAREC-475",
+    "SIN_COBERTURA:ayuda",
+    "CENAREC-1629"
+  ],
+  "glosas": [
+    "PEDIR",
+    "SIN_COBERTURA:ayuda",
+    "INTÉRPRETE"
+  ],
+  "notas": "\"ayuda\" no está en el diccionario; el sinónimo \"auxilio\" tampoco.",
+  "guardado": "2026-11-14T12:35:31",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,17 @@
+{
+  "caso_id": "c026",
+  "texto_fuente": "Debe leer la carta.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-677",
+    "CENAREC-131"
+  ],
+  "glosas": [
+    "DEBER",
+    "LEER",
+    "CARTA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:27:58",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,11 @@
+{
+  "descripcion": "Trazas presentes en trazas/<experimento>/ que NO son corridas formales y se excluyen explícitamente del análisis y de la detección de corridas hechas. Se identifican por ruta y SHA-256: si el archivo cambia, la exclusión deja de valer y el análisis falla cerrado.",
+  "trazas_excluidas": [
+    {
+      "ruta": "trazas/experimento/A/rep1/A_c001_20261114_072445_357974.jsonl",
+      "sha256": "87b131547ae0a4128fbd6c1714e4a9b813a0a3316ee59cabf07985d46eaa3017",
+      "motivo": "Prueba previa al experimento del 2026-11-14: la API rechazó la autenticación (HTTP 401) y no hubo respuesta del modelo. No es una corrida formal; se conserva sin modificar como evidencia.",
+      "registrada": "2026-11-14"
+    }
+  ]
+}

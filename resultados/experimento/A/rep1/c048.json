@@ -1,0 +1,29 @@
+{
+  "caso_id": "c048",
+  "texto_fuente": "Si no puede venir el lunes, debe avisar a la oficina antes del viernes.",
+  "secuencia": [
+    "CENAREC-1483",
+    "CENAREC-29",
+    "CENAREC-625",
+    "CENAREC-382",
+    "CENAREC-296",
+    "CENAREC-1405",
+    "CENAREC-1685",
+    "CENAREC-1198",
+    "CENAREC-621"
+  ],
+  "glosas": [
+    "SÍ",
+    "NO-PODER",
+    "VENIR",
+    "LUNES",
+    "DEBER",
+    "AVISAR",
+    "OFICINA",
+    "ANTES",
+    "VIERNES"
+  ],
+  "notas": "\"no puede\" representado con NO-PODER.",
+  "guardado": "2026-11-14T12:35:59",
+  "indice_lexico": "cenarec_indice.tsv"
+}

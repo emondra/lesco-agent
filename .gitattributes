@@ -3,3 +3,9 @@ data/** text eol=lf
 # Los registros de pruebas se versionan byte a byte, sin conversión de finales de línea,
 # para que sus SHA-256 coincidan en cualquier clon (ver evidencia/registrar_pruebas.py).
 evidencia/pruebas/** -text
+# Evidencia del experimento formal y de F7 (2026-11-14): byte a byte, para que las huellas SHA-256
+# registradas (A/B 1f136fc700cde2a2, F7 1b6b6d300db395a9) coincidan en cualquier clon y sistema.
+trazas/experimento/** -text
+resultados/experimento/** -text
+trazas/ataques/** -text
+resultados/ataques/** -text

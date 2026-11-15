@@ -1,0 +1,17 @@
+{
+  "caso_id": "c044",
+  "texto_fuente": "El hospital atiende todo el día.",
+  "secuencia": [
+    "CENAREC-966",
+    "CENAREC-98",
+    "CENAREC-582"
+  ],
+  "glosas": [
+    "HOSPITAL",
+    "ATENDER",
+    "TODO-EL-DÍA"
+  ],
+  "notas": "\"todo el día\" se representó con la glosa única TODO-EL-DÍA (coincidencia exacta de la expresión).",
+  "guardado": "2026-11-14T12:48:28",
+  "indice_lexico": "cenarec_indice.tsv"
+}

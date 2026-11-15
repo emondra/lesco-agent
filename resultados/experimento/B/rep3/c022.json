@@ -1,0 +1,19 @@
+{
+  "caso_id": "c022",
+  "texto_fuente": "No tiene que pagar nada.",
+  "secuencia": [
+    "CENAREC-1208",
+    "CENAREC-1160",
+    "CENAREC-195",
+    "CENAREC-124"
+  ],
+  "glosas": [
+    "NO",
+    "TENER",
+    "PAGAR",
+    "NADA"
+  ],
+  "notas": "\"Tiene que\" representado solo con TENER (sin entrada para \"tener que\"; \"que\" omitida).",
+  "guardado": "2026-11-14T12:55:39",
+  "indice_lexico": "cenarec_indice.tsv"
+}

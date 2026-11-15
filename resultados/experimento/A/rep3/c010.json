@@ -1,0 +1,17 @@
+{
+  "caso_id": "c010",
+  "texto_fuente": "Hoy no hay intérprete.",
+  "secuencia": [
+    "CENAREC-277",
+    "CENAREC-1629",
+    "CENAREC-1505"
+  ],
+  "glosas": [
+    "HOY",
+    "INTÉRPRETE",
+    "NO-HAY/NO-HABER"
+  ],
+  "notas": "\"No hay\" representado con la seña única NO-HAY/NO-HABER.",
+  "guardado": "2026-11-14T12:52:07",
+  "indice_lexico": "cenarec_indice.tsv"
+}

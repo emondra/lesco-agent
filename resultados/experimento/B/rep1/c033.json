@@ -1,0 +1,19 @@
+{
+  "caso_id": "c033",
+  "texto_fuente": "Tiene que traer dos fotos.",
+  "secuencia": [
+    "CENAREC-1160",
+    "CENAREC-380",
+    "CENAREC-1349",
+    "CENAREC-322"
+  ],
+  "glosas": [
+    "TENER",
+    "LLEVAR-TRAER",
+    "DOS",
+    "FOTO"
+  ],
+  "notas": "\"Tener que\" no está en el diccionario; se usó TENER. TRAER solo tiene coincidencia parcial (LLEVAR-TRAER), mismo sentido.",
+  "guardado": "2026-11-14T12:30:32",
+  "indice_lexico": "cenarec_indice.tsv"
+}

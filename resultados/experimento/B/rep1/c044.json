@@ -1,0 +1,17 @@
+{
+  "caso_id": "c044",
+  "texto_fuente": "El hospital atiende todo el día.",
+  "secuencia": [
+    "CENAREC-966",
+    "CENAREC-98",
+    "CENAREC-582"
+  ],
+  "glosas": [
+    "HOSPITAL",
+    "ATENDER",
+    "TODO-EL-DÍA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:33:17",
+  "indice_lexico": "cenarec_indice.tsv"
+}

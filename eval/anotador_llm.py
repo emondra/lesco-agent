@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 """
-Anotador 2 (D10): claude-opus-5-5 etiqueta la plantilla palabra por palabra.
+Anotador LLM: un modelo etiqueta la plantilla palabra por palabra. Sin opciones, es el anotador 2
+(D10): claude-opus-5-5 con eval/prompts/anotador2_v1.md y sus archivos de siempre.
 
-    python eval/anotador_llm.py                    # todos los casos de la plantilla
-    python eval/anotador_llm.py --solo c001 c002   # algunos casos
+    python eval/anotador_llm.py                    # anotador 2, todos los casos de la plantilla
+    python eval/anotador_llm.py --solo c001 c002   # anotador 2, algunos casos
+    python eval/anotador_llm.py --prompt <prompt.md> --modelo <modelo> \
+        --registro <respuestas.jsonl> --salida <anotacion.tsv>   # otro anotador LLM
 
-Independencia: el prompt (eval/prompts/anotador2_v1.md) contiene solo la guía, el índice y la
-plantilla del caso. Nunca ve las etiquetas del anotador 1 ni salidas del agente.
+Aislamiento: --registro y --salida nunca pueden ser anotador1.tsv ni plantilla.tsv, ni el mismo
+archivo; y un prompt distinto del oficial del anotador 2 no puede escribir en sus archivos. Se
+comprueba con rutas resueltas, antes de leer la clave o llamar a la API.
+
+Independencia: el prompt contiene solo la guía, el índice y la plantilla del caso. Nunca ve las
+etiquetas de otro anotador ni salidas del agente.
 
 Reproducibilidad: cada respuesta cruda se agrega a eval/anotaciones/anotador2_respuestas.jsonl
 con el modelo, el SHA-256 del prompt de sistema, el uso de tokens y la fecha. Es reanudable: los
-casos con una respuesta válida ya registrada no se vuelven a pedir. El TSV final se reconstruye
-siempre desde ese registro.
+casos con una respuesta válida ya registrada con el MISMO prompt y el MISMO modelo (comparación
+exacta) no se vuelven a pedir. Un registro con respuestas válidas de otro prompt u otro modelo se
+rechaza antes de llamar a la API; si la API declara un modelo distinto del pedido, se detiene sin más
+solicitudes. El TSV final se reconstruye siempre desde ese registro, solo con ese prompt y ese modelo.
 
 La clave se lee como en el agente (ANTHROPIC_API_KEY o .env); nunca se escribe en disco.
 """
@@ -19,6 +28,7 @@ La clave se lee como en el agente (ANTHROPIC_API_KEY o .env); nunca se escribe e
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -62,8 +72,8 @@ ESQUEMA = {
 }
 
 
-def prompt_sistema() -> str:
-    plantilla = RUTA_PROMPT.read_text(encoding="utf-8")
+def prompt_sistema(ruta: Path = RUTA_PROMPT) -> str:
+    plantilla = ruta.read_text(encoding="utf-8")
     return plantilla.replace("{guia}", RUTA_GUIA.read_text(encoding="utf-8").strip()) \
                     .replace("{indice}", RUTA_INDICE.read_text(encoding="utf-8").strip())
 
@@ -114,26 +124,84 @@ def pedir(clave: str, sistema: str, mensaje: str, modelo: str) -> dict:
     raise SystemExit("reintentos agotados")
 
 
-def registro_valido(ruta: Path) -> dict[str, dict]:
+def registro_valido(ruta: Path, sha: str | None = None, modelo: str | None = None) -> dict[str, dict]:
+    """Última respuesta válida (sin problemas) de cada caso. Sin sha ni modelo, como siempre. Con ellos,
+    solo las de ese SHA-256 de prompt compuesto y ese modelo, con comparación EXACTA del campo 'modelo'
+    (el que declaró la API); nunca por prefijo ni por alias."""
     validos = {}
     if ruta.exists():
         for linea in ruta.read_text(encoding="utf-8").splitlines():
             r = json.loads(linea)
-            if not r["problemas"]:
-                validos[r["caso_id"]] = r
+            if r["problemas"]:
+                continue
+            if sha is not None and r.get("sha256_prompt") != sha:
+                continue
+            if modelo is not None and r.get("modelo") != modelo:
+                continue
+            validos[r["caso_id"]] = r
     return validos
+
+
+def identidades_ajenas(ruta: Path, sha: str, modelo: str) -> list[str]:
+    """Problemas si el registro contiene respuestas VÁLIDAS de otro prompt u otro modelo (comparación
+    exacta). Un registro pertenece a un solo anotador. Solo informa recuentos, nunca etiquetas."""
+    otros_sha = otros_modelo = 0
+    if ruta.exists():
+        for linea in ruta.read_text(encoding="utf-8").splitlines():
+            r = json.loads(linea)
+            if r["problemas"]:
+                continue
+            otros_sha += r.get("sha256_prompt") != sha
+            otros_modelo += r.get("modelo") != modelo
+    problemas = []
+    if otros_sha:
+        problemas.append(f"el registro tiene {otros_sha} respuestas válidas de otro prompt (SHA-256 distinto)")
+    if otros_modelo:
+        problemas.append(f"el registro tiene {otros_modelo} respuestas válidas de otro modelo distinto de {modelo}")
+    return problemas
+
+
+def _clave_ruta(ruta: Path) -> str:
+    """Ruta comparable: resuelta y con os.path.normcase (en Windows, sin distinción de mayúsculas y con la
+    misma barra), también si el archivo todavía no existe."""
+    return os.path.normcase(str(ruta.resolve()))
+
+
+def problemas_de_aislamiento(prompt: Path, registro: Path, salida: Path) -> list[str]:
+    """Destinos prohibidos, con rutas resueltas (una variante relativa no elude la comprobación).
+    Lista vacía = se puede continuar. Se llama antes de leer la clave o de escribir nada."""
+    p, r, s = _clave_ruta(prompt), _clave_ruta(registro), _clave_ruta(salida)
+    problemas = []
+    if r == s:
+        problemas.append("--registro y --salida no pueden ser el mismo archivo")
+    for protegido in (DIR_ANOT / "anotador1.tsv", DIR_ANOT / "plantilla.tsv"):
+        if _clave_ruta(protegido) in (r, s):
+            problemas.append(f"no se puede escribir en {protegido.name}")
+    if p != _clave_ruta(RUTA_PROMPT):
+        for del_a2 in (DIR_ANOT / "anotador2.tsv", DIR_ANOT / "anotador2_respuestas.jsonl"):
+            if _clave_ruta(del_a2) in (r, s):
+                problemas.append(f"un prompt distinto de {RUTA_PROMPT.name} no puede escribir en {del_a2.name}")
+    return problemas
 
 
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    ap = argparse.ArgumentParser(description="Anotador 2 con claude-opus-5-5")
+    ap = argparse.ArgumentParser(description="Anotador LLM (por defecto, el anotador 2 con claude-opus-5-5)")
     ap.add_argument("--plantilla", type=Path, default=DIR_ANOT / "plantilla.tsv")
     ap.add_argument("--registro", type=Path, default=DIR_ANOT / "anotador2_respuestas.jsonl")
     ap.add_argument("--salida", type=Path, default=DIR_ANOT / "anotador2.tsv")
+    ap.add_argument("--prompt", type=Path, default=RUTA_PROMPT)
     ap.add_argument("--modelo", default=MODELO)
     ap.add_argument("--solo", nargs="*", default=None)
     a = ap.parse_args()
+
+    aislamiento = problemas_de_aislamiento(a.prompt, a.registro, a.salida)
+    if aislamiento:
+        print("Configuración rechazada (no se llamó a la API ni se escribió nada):")
+        for problema in aislamiento:
+            print(f"  - {problema}")
+        return 3
 
     filas = leer_tsv(a.plantilla)
     por_caso: dict[str, list[dict]] = {}
@@ -141,13 +209,20 @@ def main() -> int:
         por_caso.setdefault(f["caso_id"], []).append(f)
     casos = [c for c in por_caso if not a.solo or c in a.solo]
 
-    sistema = prompt_sistema()
+    sistema = prompt_sistema(a.prompt)
     sha = hashlib.sha256(sistema.encode("utf-8")).hexdigest()
     idws = {int(l.split("\t")[0]) for l in RUTA_INDICE.read_text(encoding="utf-8").splitlines()[1:] if l}
-    hechos = registro_valido(a.registro)
-    pendientes = [c for c in casos if c not in hechos or hechos[c]["sha256_prompt"] != sha]
-    print(f"{len(casos)} casos; {len(casos) - len(pendientes)} ya anotados con este prompt; "
-          f"{len(pendientes)} por pedir (prompt {sha[:12]})")
+    ajenas = identidades_ajenas(a.registro, sha, a.modelo)
+    if ajenas:
+        print("Registro rechazado: un registro pertenece a un solo anotador (prompt + modelo). "
+              "No se llamó a la API ni se escribió nada:")
+        for problema in ajenas:
+            print(f"  - {problema}")
+        return 3
+    hechos = registro_valido(a.registro, sha, a.modelo)
+    pendientes = [c for c in casos if c not in hechos]
+    print(f"{len(casos)} casos; {len(casos) - len(pendientes)} ya anotados con este prompt y modelo; "
+          f"{len(pendientes)} por pedir (prompt {sha[:12]}, modelo {a.modelo})")
 
     if pendientes:
         clave = cargar_clave()
@@ -157,24 +232,31 @@ def main() -> int:
     for caso in pendientes:
         for intento in range(1, 3):
             r = pedir(clave, sistema, mensaje_caso(caso, por_caso[caso]), a.modelo)
+            declarado = r.get("model")          # sin valor por defecto: no se presume el modelo
             texto = "".join(b.get("text", "") for b in r.get("content", []) if b.get("type") == "text")
             try:
                 etiquetas = json.loads(texto)["etiquetas"]
                 problemas = validar(etiquetas, por_caso[caso], idws)
             except (json.JSONDecodeError, KeyError, TypeError) as e:
                 etiquetas, problemas = [], [f"respuesta no utilizable: {e}"]
+            distinto = declarado != a.modelo    # comparación exacta, sin alias
+            if distinto:
+                problemas = [f"modelo declarado por la API {declarado!r} distinto del solicitado {a.modelo!r}"] + problemas
             with a.registro.open("a", encoding="utf-8") as fh:
                 fh.write(json.dumps({
-                    "caso_id": caso, "intento": intento, "modelo": r.get("model", a.modelo),
+                    "caso_id": caso, "intento": intento, "modelo": declarado,
                     "sha256_prompt": sha, "fecha": datetime.now().isoformat(timespec="seconds"),
                     "stop_reason": r.get("stop_reason"), "uso": r.get("usage", {}),
                     "etiquetas": etiquetas, "problemas": problemas,
                 }, ensure_ascii=False) + "\n")
             print(f"  {caso} intento {intento}: {'ok' if not problemas else '; '.join(problemas)}")
+            if distinto:
+                print("Detenido: la API declaró otro modelo. No se hacen más solicitudes ni se escribe el TSV.")
+                return 4
             if not problemas:
                 break
 
-    hechos = registro_valido(a.registro)
+    hechos = registro_valido(a.registro, sha, a.modelo)   # el TSV nunca mezcla prompts ni modelos
     faltan = [c for c in por_caso if c not in hechos]
     salida = []
     for caso, fs in por_caso.items():

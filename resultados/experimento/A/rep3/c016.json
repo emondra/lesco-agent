@@ -1,0 +1,15 @@
+{
+  "caso_id": "c016",
+  "texto_fuente": "Gracias por esperar.",
+  "secuencia": [
+    "CENAREC-1475",
+    "CENAREC-666"
+  ],
+  "glosas": [
+    "GRACIAS",
+    "ESPERAR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:53:42",
+  "indice_lexico": "cenarec_indice.tsv"
+}

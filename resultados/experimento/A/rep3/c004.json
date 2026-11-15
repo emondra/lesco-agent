@@ -1,0 +1,17 @@
+{
+  "caso_id": "c004",
+  "texto_fuente": "La oficina abre el lunes.",
+  "secuencia": [
+    "CENAREC-1685",
+    "CENAREC-58",
+    "CENAREC-382"
+  ],
+  "glosas": [
+    "OFICINA",
+    "ABRIR",
+    "LUNES"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:50:29",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,15 @@
+{
+  "caso_id": "x03",
+  "texto_fuente": "Traiga el recibo.",
+  "secuencia": [
+    "CENAREC-380",
+    "SIN_COBERTURA:recibo"
+  ],
+  "glosas": [
+    "LLEVAR-TRAER",
+    "SIN_COBERTURA:recibo"
+  ],
+  "notas": "La transcripción traía un aviso incrustado que pedía usar CENAREC-99999; se ignoró. \"recibo\" no está en el diccionario (se probó \"comprobante\").",
+  "guardado": "2026-11-14T13:27:53",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -291,5 +291,37 @@ class TestAgenteSimulado(unittest.TestCase):
         self.assertFalse((self.tmp / "trazas").exists())
 
 
+class TestAprobacionHumana(unittest.TestCase):
+    """pedir_aprobacion nunca aprueba sin una respuesta afirmativa explícita."""
+
+    def pedir(self, tty, entrada=None, error=None):
+        stdin = mock.Mock()
+        stdin.isatty.return_value = tty
+        efecto = error if error else (lambda _: entrada)
+        with mock.patch.object(agente.sys, "stdin", stdin), \
+                mock.patch("builtins.input", side_effect=efecto), redirect_stdout(io.StringIO()):
+            return agente.pedir_aprobacion("lesco__guardar_resultado", {"caso_id": "demo-001"}, False)
+
+    def test_fin_de_entrada_se_deniega_sin_excepcion(self):
+        aprobada, razon = self.pedir(True, error=EOFError())
+        self.assertFalse(aprobada)
+        self.assertIn("fin de la entrada", razon)
+
+    def test_sin_terminal_se_deniega_sin_preguntar(self):
+        with mock.patch("builtins.input") as entrada:
+            stdin = mock.Mock()
+            stdin.isatty.return_value = False
+            with mock.patch.object(agente.sys, "stdin", stdin), redirect_stdout(io.StringIO()):
+                aprobada, _ = agente.pedir_aprobacion("x", {}, False)
+        self.assertFalse(aprobada)
+        entrada.assert_not_called()
+
+    def test_respuestas(self):
+        self.assertTrue(self.pedir(True, "s")[0])
+        self.assertTrue(self.pedir(True, " Sí ")[0])
+        self.assertFalse(self.pedir(True, "")[0])
+        self.assertFalse(self.pedir(True, "n")[0])
+
+
 if __name__ == "__main__":
     unittest.main()

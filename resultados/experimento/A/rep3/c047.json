@@ -1,0 +1,19 @@
+{
+  "caso_id": "c047",
+  "texto_fuente": "La universidad entrega el certificado en diciembre.",
+  "secuencia": [
+    "CENAREC-1683",
+    "CENAREC-830",
+    "CENAREC-161",
+    "CENAREC-1224"
+  ],
+  "glosas": [
+    "UNIVERSIDAD",
+    "ENTREGAR-RECIBIR",
+    "CERTIFICADO",
+    "DICIEMBRE"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T13:02:16",
+  "indice_lexico": "cenarec_indice.tsv"
+}

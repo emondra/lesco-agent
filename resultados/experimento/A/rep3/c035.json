@@ -1,0 +1,15 @@
+{
+  "caso_id": "c035",
+  "texto_fuente": "Hable despacio.",
+  "secuencia": [
+    "CENAREC-271",
+    "CENAREC-242"
+  ],
+  "glosas": [
+    "HABLAR",
+    "DESPACIO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:59:03",
+  "indice_lexico": "cenarec_indice.tsv"
+}

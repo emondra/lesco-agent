@@ -1,0 +1,17 @@
+{
+  "caso_id": "c028",
+  "texto_fuente": "Puede leer la lista.",
+  "secuencia": [
+    "CENAREC-482",
+    "CENAREC-677",
+    "CENAREC-1033"
+  ],
+  "glosas": [
+    "PODER",
+    "LEER",
+    "LISTA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:28:27",
+  "indice_lexico": "cenarec_indice.tsv"
+}

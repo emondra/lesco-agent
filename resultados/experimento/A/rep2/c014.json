@@ -1,0 +1,21 @@
+{
+  "caso_id": "c014",
+  "texto_fuente": "Puede pagar con dólares o colones.",
+  "secuencia": [
+    "CENAREC-482",
+    "CENAREC-195",
+    "CENAREC-918",
+    "CENAREC-686",
+    "CENAREC-416"
+  ],
+  "glosas": [
+    "PODER",
+    "PAGAR",
+    "DÓLAR",
+    "O",
+    "COLÓN"
+  ],
+  "notas": "Se omitió la preposición 'con' (sin seña buscada); plurales representados en singular.",
+  "guardado": "2026-11-14T12:39:43",
+  "indice_lexico": "cenarec_indice.tsv"
+}

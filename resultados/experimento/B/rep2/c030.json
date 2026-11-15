@@ -1,0 +1,17 @@
+{
+  "caso_id": "c030",
+  "texto_fuente": "Firme aquí, por favor.",
+  "secuencia": [
+    "CENAREC-325",
+    "SIN_COBERTURA:aquí",
+    "CENAREC-1482"
+  ],
+  "glosas": [
+    "FIRMAR",
+    "SIN_COBERTURA:aquí",
+    "POR-FAVOR"
+  ],
+  "notas": "\"aquí\" sin entrada; el sinónimo \"acá\" tampoco.",
+  "guardado": "2026-11-14T12:44:27",
+  "indice_lexico": "cenarec_indice.tsv"
+}

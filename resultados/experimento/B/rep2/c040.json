@@ -1,0 +1,17 @@
+{
+  "caso_id": "c040",
+  "texto_fuente": "Puede imprimir la factura.",
+  "secuencia": [
+    "CENAREC-482",
+    "CENAREC-359",
+    "CENAREC-324"
+  ],
+  "glosas": [
+    "PODER",
+    "IMPRIMIR",
+    "FACTURA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:46:57",
+  "indice_lexico": "cenarec_indice.tsv"
+}

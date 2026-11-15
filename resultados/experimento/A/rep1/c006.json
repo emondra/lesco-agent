@@ -1,0 +1,19 @@
+{
+  "caso_id": "c006",
+  "texto_fuente": "Escriba su nombre y apellido.",
+  "secuencia": [
+    "CENAREC-1206",
+    "SIN_COBERTURA:su",
+    "CENAREC-1547",
+    "CENAREC-1212"
+  ],
+  "glosas": [
+    "ESCRIBIR",
+    "SIN_COBERTURA:su",
+    "NOMBRE",
+    "APELLIDO"
+  ],
+  "notas": "\"su\" (posesivo) no está en el diccionario; \"y\" omitido como conector.",
+  "guardado": "2026-11-14T12:21:57",
+  "indice_lexico": "cenarec_indice.tsv"
+}

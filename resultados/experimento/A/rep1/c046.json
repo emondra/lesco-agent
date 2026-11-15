@@ -1,0 +1,17 @@
+{
+  "caso_id": "c046",
+  "texto_fuente": "Pida ayuda al intérprete.",
+  "secuencia": [
+    "CENAREC-475",
+    "CENAREC-93",
+    "CENAREC-1629"
+  ],
+  "glosas": [
+    "PEDIR",
+    "AYUDAR",
+    "INTÉRPRETE"
+  ],
+  "notas": "\"Ayuda\" no estaba como sustantivo; se usó AYUDAR (CENAREC-93).",
+  "guardado": "2026-11-14T12:35:22",
+  "indice_lexico": "cenarec_indice.tsv"
+}

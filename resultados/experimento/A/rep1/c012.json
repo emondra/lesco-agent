@@ -1,0 +1,19 @@
+{
+  "caso_id": "c012",
+  "texto_fuente": "Debe esperar quince minutos.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-666",
+    "CENAREC-972",
+    "CENAREC-789"
+  ],
+  "glosas": [
+    "DEBER",
+    "ESPERAR",
+    "QUINCE",
+    "MINUTO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:23:26",
+  "indice_lexico": "cenarec_indice.tsv"
+}

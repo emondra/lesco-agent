@@ -1,0 +1,19 @@
+{
+  "caso_id": "c011",
+  "texto_fuente": "Necesito hablar con un abogado.",
+  "secuencia": [
+    "CENAREC-440",
+    "CENAREC-271",
+    "CENAREC-836",
+    "CENAREC-944"
+  ],
+  "glosas": [
+    "NECESITAR",
+    "HABLAR",
+    "JUNTOS/CON",
+    "ABOGADO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:38:54",
+  "indice_lexico": "cenarec_indice.tsv"
+}

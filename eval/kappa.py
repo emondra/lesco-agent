@@ -59,6 +59,14 @@ def informe(pares: list[tuple[dict, dict]]) -> tuple[dict, list[tuple[dict, dict
     return res, [(x, y) for x, y in pares if x["etiqueta"] != y["etiqueta"]]
 
 
+def ruta_mostrable(ruta: Path) -> str:
+    """Ruta para el informe: relativa a la raíz del proyecto, sin revelar rutas locales absolutas."""
+    try:
+        return ruta.resolve().relative_to(RAIZ.resolve()).as_posix()
+    except ValueError:
+        return ruta.name
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -73,7 +81,7 @@ def main() -> int:
     lineas = [
         "# Acuerdo entre anotadores",
         "",
-        f"Anotador 1: `{a.anotador1.as_posix()}` · Anotador 2: `{a.anotador2.as_posix()}`",
+        f"Anotador 1: `{ruta_mostrable(a.anotador1)}` · Anotador 2: `{ruta_mostrable(a.anotador2)}`",
         "",
         "| Conjunto | Palabras | Acuerdo observado | Kappa de Cohen |",
         "|---|---|---|---|",
@@ -83,7 +91,7 @@ def main() -> int:
         f"Casos con todas las etiquetas idénticas: {res['casos']['identicos']} de {res['casos']['n']}.",
         "",
         "La cifra principal es *contenido* (palabras sin sugerencia en la plantilla).",
-        f"Desacuerdos para adjudicar: {len(desacuerdos)} (`{a.desacuerdos.as_posix()}`).",
+        f"Desacuerdos para adjudicar: {len(desacuerdos)} (`{ruta_mostrable(a.desacuerdos)}`).",
     ]
     a.informe.write_text("\n".join(lineas) + "\n", encoding="utf-8")
     columnas = ["caso_id", "pos", "palabra", "anotador1", "anotador2", "decision", "motivo"]

@@ -1,0 +1,19 @@
+{
+  "caso_id": "c018",
+  "texto_fuente": "El trámite dura dos semanas.",
+  "secuencia": [
+    "SIN_COBERTURA:trámite",
+    "CENAREC-249",
+    "CENAREC-1349",
+    "CENAREC-548"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:trámite",
+    "DURAR",
+    "DOS",
+    "SEMANA"
+  ],
+  "notas": "\"Trámite\" no está en el diccionario; tampoco su sinónimo \"gestión\".",
+  "guardado": "2026-11-14T12:25:40",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,15 @@
+{
+  "caso_id": "c021",
+  "texto_fuente": "Su cita es el martes.",
+  "secuencia": [
+    "SIN_COBERTURA:cita",
+    "CENAREC-1506"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:cita",
+    "MARTES"
+  ],
+  "notas": "\"cita\" sin entrada; probado sinónimo \"reservación\" sin resultado.",
+  "guardado": "2026-11-14T12:55:22",
+  "indice_lexico": "cenarec_indice.tsv"
+}

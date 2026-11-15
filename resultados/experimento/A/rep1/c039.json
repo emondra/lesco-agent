@@ -1,0 +1,17 @@
+{
+  "caso_id": "c039",
+  "texto_fuente": "Hay un problema con su factura.",
+  "secuencia": [
+    "CENAREC-324",
+    "SIN_COBERTURA:su",
+    "CENAREC-700"
+  ],
+  "glosas": [
+    "FACTURA",
+    "SIN_COBERTURA:su",
+    "PROBLEMA"
+  ],
+  "notas": "\"Hay\", \"un\" y \"con\" omitidos (sin seña propia). \"su\" no está en el diccionario. Orden: FACTURA (SU) PROBLEMA.",
+  "guardado": "2026-11-14T12:31:54",
+  "indice_lexico": "cenarec_indice.tsv"
+}

@@ -1,0 +1,17 @@
+{
+  "caso_id": "c037",
+  "texto_fuente": "Busque su expediente.",
+  "secuencia": [
+    "CENAREC-908",
+    "SIN_COBERTURA:su",
+    "CENAREC-1693"
+  ],
+  "glosas": [
+    "BUSCAR",
+    "SIN_COBERTURA:su",
+    "EXPEDIENTE"
+  ],
+  "notas": "\"su\" (posesivo) no está en el diccionario; se probó también \"suyo\" y \"usted\".",
+  "guardado": "2026-11-14T12:59:31",
+  "indice_lexico": "cenarec_indice.tsv"
+}

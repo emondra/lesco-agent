@@ -1,0 +1,17 @@
+{
+  "caso_id": "c021",
+  "texto_fuente": "Su cita es el martes.",
+  "secuencia": [
+    "SIN_COBERTURA:su",
+    "SIN_COBERTURA:cita",
+    "CENAREC-1506"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:su",
+    "SIN_COBERTURA:cita",
+    "MARTES"
+  ],
+  "notas": "\"su\" y \"cita\" no están en el diccionario (se probó consulta, tuyo). \"es\" y \"el\" omitidos.",
+  "guardado": "2026-11-14T12:26:25",
+  "indice_lexico": "cenarec_indice.tsv"
+}

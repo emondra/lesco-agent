@@ -1,0 +1,19 @@
+{
+  "caso_id": "c025",
+  "texto_fuente": "Debe presentar el expediente completo.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-830",
+    "CENAREC-1693",
+    "CENAREC-949"
+  ],
+  "glosas": [
+    "DEBER",
+    "ENTREGAR-RECIBIR",
+    "EXPEDIENTE",
+    "TODO"
+  ],
+  "notas": "\"presentar\" no está en el diccionario; se usó ENTREGAR-RECIBIR (parcial). \"completo\" aproximado con TODO.",
+  "guardado": "2026-11-14T12:42:54",
+  "indice_lexico": "cenarec_indice.tsv"
+}

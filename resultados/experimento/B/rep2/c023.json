@@ -1,0 +1,15 @@
+{
+  "caso_id": "c023",
+  "texto_fuente": "El servicio es gratis.",
+  "secuencia": [
+    "SIN_COBERTURA:servicio",
+    "CENAREC-341"
+  ],
+  "glosas": [
+    "SIN_COBERTURA:servicio",
+    "GRATIS"
+  ],
+  "notas": "\"servicio\" sin entrada en el diccionario (tampoco el sinónimo \"ayuda\").",
+  "guardado": "2026-11-14T12:42:29",
+  "indice_lexico": "cenarec_indice.tsv"
+}

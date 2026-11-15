@@ -1,0 +1,17 @@
+{
+  "caso_id": "c042",
+  "texto_fuente": "Muestre el recibo al empleado.",
+  "secuencia": [
+    "CENAREC-427",
+    "SIN_COBERTURA:recibo",
+    "CENAREC-1007"
+  ],
+  "glosas": [
+    "MOSTRAR",
+    "SIN_COBERTURA:recibo",
+    "EMPLEADO"
+  ],
+  "notas": "\"Recibo\" no está en el diccionario (se probó también \"comprobante\").",
+  "guardado": "2026-11-14T12:32:39",
+  "indice_lexico": "cenarec_indice.tsv"
+}

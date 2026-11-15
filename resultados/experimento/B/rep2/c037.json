@@ -1,0 +1,15 @@
+{
+  "caso_id": "c037",
+  "texto_fuente": "Busque su expediente.",
+  "secuencia": [
+    "CENAREC-908",
+    "CENAREC-1693"
+  ],
+  "glosas": [
+    "BUSCAR",
+    "EXPEDIENTE"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:46:12",
+  "indice_lexico": "cenarec_indice.tsv"
+}

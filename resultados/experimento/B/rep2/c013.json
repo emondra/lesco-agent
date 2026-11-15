@@ -1,0 +1,17 @@
+{
+  "caso_id": "c013",
+  "texto_fuente": "El banco cierra a las cuatro.",
+  "secuencia": [
+    "CENAREC-103",
+    "CENAREC-816",
+    "CENAREC-1086"
+  ],
+  "glosas": [
+    "BANCO",
+    "CERRAR",
+    "CUATRO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:39:34",
+  "indice_lexico": "cenarec_indice.tsv"
+}

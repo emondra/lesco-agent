@@ -1,0 +1,17 @@
+{
+  "caso_id": "c041",
+  "texto_fuente": "El doctor explica la medicina.",
+  "secuencia": [
+    "CENAREC-246",
+    "CENAREC-865",
+    "CENAREC-1692"
+  ],
+  "glosas": [
+    "DOCTOR",
+    "EXPLICAR",
+    "MEDICINA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:47:04",
+  "indice_lexico": "cenarec_indice.tsv"
+}

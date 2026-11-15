@@ -1,0 +1,19 @@
+{
+  "caso_id": "c039",
+  "texto_fuente": "Hay un problema con su factura.",
+  "secuencia": [
+    "CENAREC-1504",
+    "CENAREC-700",
+    "CENAREC-836",
+    "CENAREC-324"
+  ],
+  "glosas": [
+    "HABER/HAY",
+    "PROBLEMA",
+    "JUNTOS/CON",
+    "FACTURA"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:32:02",
+  "indice_lexico": "cenarec_indice.tsv"
+}

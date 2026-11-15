@@ -1,0 +1,17 @@
+{
+  "caso_id": "c032",
+  "texto_fuente": "Venga el jueves a las ocho.",
+  "secuencia": [
+    "CENAREC-625",
+    "CENAREC-1107",
+    "CENAREC-198"
+  ],
+  "glosas": [
+    "VENIR",
+    "JUEVES",
+    "OCHO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:30:11",
+  "indice_lexico": "cenarec_indice.tsv"
+}

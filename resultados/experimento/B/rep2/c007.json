@@ -1,0 +1,15 @@
+{
+  "caso_id": "c007",
+  "texto_fuente": "Traiga una foto.",
+  "secuencia": [
+    "CENAREC-380",
+    "CENAREC-322"
+  ],
+  "glosas": [
+    "LLEVAR-TRAER",
+    "FOTO"
+  ],
+  "notas": "\"Traer\" solo tenía coincidencia parcial (LLEVAR-TRAER); se usó por tener el mismo sentido.",
+  "guardado": "2026-11-14T12:37:54",
+  "indice_lexico": "cenarec_indice.tsv"
+}

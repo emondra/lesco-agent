@@ -12,6 +12,15 @@ Salidas:
     eval/referencia.jsonl             secuencia de referencia, dificultad y motivos por caso
 
 Donde los anotadores coinciden, esa es la etiqueta final; donde no, la `decision` registrada.
+
+Modos añadidos por D20 (2026-11-14; docs/metricas.md, registro de cambios), sin adjudicación:
+
+    python eval/construir_referencia.py --modo unico --anotacion <anotacion.tsv> --salida <r.jsonl>
+    python eval/construir_referencia.py --modo consenso --anotador1 <a.tsv> --anotador2 <b.tsv> --salida <rc.jsonl>
+
+  unico     la referencia es una sola anotación completa (R1 = anotador 2; R2 = anotador LLM A).
+  consenso  solo los casos con todas sus etiquetas iguales en las dos anotaciones (Rc); informa cuántos
+            casos y cuáles se excluyen. En estos modos no se escribe ningún TSV adjudicado.
 """
 
 import argparse
@@ -66,6 +75,32 @@ def adjudicar(a1: list[dict], a2: list[dict], desacuerdos: list[dict]) -> list[d
     return final
 
 
+def referencia_unica(filas: list[dict]) -> list[dict]:
+    """D20: una sola anotación como referencia (R1 o R2). Exige una etiqueta válida en cada palabra."""
+    invalidas = [(f["caso_id"], f["pos"]) for f in filas if not ETIQUETAS_VALIDAS.match(f["etiqueta"])]
+    if invalidas:
+        raise SystemExit(f"La anotación tiene {len(invalidas)} etiquetas vacías o inválidas, p. ej. {invalidas[:5]}")
+    return list(filas)
+
+
+def consenso(a1: list[dict], a2: list[dict]) -> tuple[list[dict], list[str]]:
+    """D20 (Rc): solo los casos cuyas etiquetas coinciden en TODAS sus palabras. Devuelve las filas de esos
+    casos y la lista de caso_id excluidos, en el orden de la plantilla."""
+    if [(f["caso_id"], f["pos"]) for f in a1] != [(f["caso_id"], f["pos"]) for f in a2]:
+        raise SystemExit("Las anotaciones no tienen las mismas palabras.")
+    referencia_unica(a1), referencia_unica(a2)
+    por_caso: dict[str, list[tuple[dict, dict]]] = {}
+    for x, y in zip(a1, a2):
+        por_caso.setdefault(x["caso_id"], []).append((x, y))
+    final, excluidos = [], []
+    for caso, pares in por_caso.items():
+        if all(x["etiqueta"] == y["etiqueta"] for x, y in pares):
+            final += [x for x, _ in pares]
+        else:
+            excluidos.append(caso)
+    return final, excluidos
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -77,15 +112,27 @@ def main() -> int:
     ap.add_argument("--meta", type=Path, default=d / "casos_meta.jsonl")
     ap.add_argument("--adjudicada", type=Path, default=d / "anotaciones" / "adjudicada.tsv")
     ap.add_argument("--salida", type=Path, default=d / "referencia.jsonl")
+    ap.add_argument("--modo", choices=("adjudicada", "unico", "consenso"), default="adjudicada")
+    ap.add_argument("--anotacion", type=Path, default=None, help="modo unico: la anotación de referencia")
     a = ap.parse_args()
 
-    filas_des = []
-    if a.desacuerdos.exists():
-        lineas = a.desacuerdos.read_text(encoding="utf-8").splitlines()
-        cols = lineas[0].split("\t")
-        filas_des = [dict(zip(cols, l.split("\t") + [""] * len(cols))) for l in lineas[1:] if l.strip()]
-    final = adjudicar(leer_tsv(a.anotador1), leer_tsv(a.anotador2), filas_des)
-    escribir_tsv(final, a.adjudicada)
+    if a.modo == "unico":
+        if a.anotacion is None:
+            ap.error("--modo unico exige --anotacion")
+        final = referencia_unica(leer_tsv(a.anotacion))
+    elif a.modo == "consenso":
+        final, excluidos = consenso(leer_tsv(a.anotador1), leer_tsv(a.anotador2))
+        print(f"consenso: {len(excluidos)} casos excluidos por desacuerdo: {', '.join(excluidos) or 'ninguno'}")
+        if not final:
+            raise SystemExit("Ningún caso con acuerdo total: no hay referencia de consenso.")
+    else:
+        filas_des = []
+        if a.desacuerdos.exists():
+            lineas = a.desacuerdos.read_text(encoding="utf-8").splitlines()
+            cols = lineas[0].split("\t")
+            filas_des = [dict(zip(cols, l.split("\t") + [""] * len(cols))) for l in lineas[1:] if l.strip()]
+        final = adjudicar(leer_tsv(a.anotador1), leer_tsv(a.anotador2), filas_des)
+        escribir_tsv(final, a.adjudicada)
 
     meta = {m["caso_id"]: m for m in map(json.loads, a.meta.read_text(encoding="utf-8").splitlines()) if m}
     por_caso: dict[str, list[dict]] = {}
@@ -96,6 +143,7 @@ def main() -> int:
         motivos = motivos_de(filas, meta.get(caso, {}).get("motivos", []))
         registros.append({"caso_id": caso, "secuencia": secuencia(filas),
                           "dificultad": "dificil" if motivos else "normal", "motivos": motivos})
+    a.salida.parent.mkdir(parents=True, exist_ok=True)
     a.salida.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in registros), encoding="utf-8")
     dificiles = sum(r["dificultad"] == "dificil" for r in registros)
     print(f"{a.salida}: {len(registros)} casos, {dificiles} difíciles ({dificiles / len(registros):.0%})")

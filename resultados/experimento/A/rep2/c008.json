@@ -1,0 +1,17 @@
+{
+  "caso_id": "c008",
+  "texto_fuente": "¿Cuánto debo pagar?",
+  "secuencia": [
+    "CENAREC-54",
+    "CENAREC-296",
+    "CENAREC-195"
+  ],
+  "glosas": [
+    "CUÁNTO",
+    "DEBER",
+    "PAGAR"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:38:01",
+  "indice_lexico": "cenarec_indice.tsv"
+}

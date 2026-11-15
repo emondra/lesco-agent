@@ -1,0 +1,19 @@
+{
+  "caso_id": "c033",
+  "texto_fuente": "Tiene que traer dos fotos.",
+  "secuencia": [
+    "CENAREC-296",
+    "CENAREC-380",
+    "CENAREC-1349",
+    "CENAREC-322"
+  ],
+  "glosas": [
+    "DEBER",
+    "LLEVAR-TRAER",
+    "DOS",
+    "FOTO"
+  ],
+  "notas": "\"Tener que\" no está en el diccionario; se usó DEBER para la obligación. LLEVAR-TRAER es coincidencia parcial. Plural de fotos expresado con DOS.",
+  "guardado": "2026-11-14T12:58:31",
+  "indice_lexico": "cenarec_indice.tsv"
+}

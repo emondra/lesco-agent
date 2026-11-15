@@ -1,0 +1,17 @@
+{
+  "caso_id": "c006",
+  "texto_fuente": "Escriba su nombre y apellido.",
+  "secuencia": [
+    "CENAREC-1206",
+    "CENAREC-1547",
+    "CENAREC-1212"
+  ],
+  "glosas": [
+    "ESCRIBIR",
+    "NOMBRE",
+    "APELLIDO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:37:39",
+  "indice_lexico": "cenarec_indice.tsv"
+}

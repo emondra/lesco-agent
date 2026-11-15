@@ -275,7 +275,13 @@ def pedir_aprobacion(nombre: str, argumentos: dict, auto: bool) -> tuple[bool, s
         return False, "denegada: no había una persona disponible para aprobarla"
     print(f"\n      El agente quiere ejecutar {nombre} con:")
     print("      " + json.dumps(argumentos, ensure_ascii=False, indent=2).replace("\n", "\n      "))
-    si = input("      ¿Aprobar? [s/N] ").strip().lower() in ("s", "si", "sí", "y")
+    try:
+        respuesta = input("      ¿Aprobar? [s/N] ")
+    except EOFError:
+        # En Windows, NUL (o /dev/null) se presenta como terminal, pero no tiene datos: se deniega.
+        print("\n      sin respuesta (fin de la entrada): se DENIEGA por seguridad")
+        return False, "denegada: no se recibió respuesta de una persona (fin de la entrada)"
+    si = respuesta.strip().lower() in ("s", "si", "sí", "y")
     return si, "aprobada por una persona" if si else "rechazada por una persona"
 
 

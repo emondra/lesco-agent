@@ -22,7 +22,7 @@ RAIZ = Path(__file__).resolve().parent
 sys.path.insert(0, str(RAIZ / "eval"))
 
 from puntuar import (METRICAS_CALIDAD, METRICAS_PROCESO, PRECIOS, REMUESTREOS, SEMILLA,  # noqa: E402
-                     ErrorVinculacion, agregar, diferencia_pareada, evaluar)
+                     ErrorVinculacion, agregar, cargar_exclusiones, diferencia_pareada, evaluar)
 
 # Conjunto esperado del experimento. No hay manifiesto: se usan los mismos valores por defecto que
 # agente/ejecutar_casos.py (--configs A B, --repeticiones 3), que coinciden con docs/metricas.md §4.
@@ -59,6 +59,8 @@ def main() -> int:
                     help="configuraciones esperadas (por defecto, las de ejecutar_casos.py)")
     ap.add_argument("--repeticiones", type=int, default=REPETICIONES_PROTOCOLO,
                     help="repeticiones esperadas por configuración (por defecto, las de ejecutar_casos.py)")
+    ap.add_argument("--exclusiones", type=Path, default=RAIZ / "eval" / "exclusiones_experimento.json",
+                    help="trazas excluidas explícitamente del análisis (por ruta y SHA-256)")
     a = ap.parse_args()
     if a.repeticiones < 1:
         ap.error("--repeticiones debe ser 1 o más")
@@ -71,7 +73,11 @@ def main() -> int:
         return 2
     referencia = {r["caso_id"]: r for r in map(json.loads, a.referencia.read_text(encoding="utf-8").splitlines()) if r}
     try:
-        filas = evaluar(a.experimento, referencia, configuraciones=a.configs, repeticiones=a.repeticiones)
+        excluidas = cargar_exclusiones(a.exclusiones)
+        if excluidas:
+            print(f"Trazas excluidas explícitamente del análisis: {len(excluidas)} ({a.exclusiones.name}).")
+        filas = evaluar(a.experimento, referencia, configuraciones=a.configs, repeticiones=a.repeticiones,
+                        excluidas=excluidas)
     except ErrorVinculacion as e:
         print("No se generan tablas: hay ejecuciones esperadas sin traza o sin consistencia documental "
               "con su caso:")

@@ -1,0 +1,17 @@
+{
+  "caso_id": "c027",
+  "texto_fuente": "Necesita el permiso del ministerio.",
+  "secuencia": [
+    "CENAREC-440",
+    "CENAREC-488",
+    "CENAREC-1632"
+  ],
+  "glosas": [
+    "NECESITAR",
+    "PERMISO",
+    "MINISTERIO/MINISTRO"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:43:27",
+  "indice_lexico": "cenarec_indice.tsv"
+}

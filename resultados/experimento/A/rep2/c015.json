@@ -1,0 +1,17 @@
+{
+  "caso_id": "c015",
+  "texto_fuente": "Envíe el formulario por correo electrónico.",
+  "secuencia": [
+    "CENAREC-1092",
+    "SIN_COBERTURA:formulario",
+    "CENAREC-1227"
+  ],
+  "glosas": [
+    "ENVIAR",
+    "SIN_COBERTURA:formulario",
+    "CORREO-ELECTRÓNICO"
+  ],
+  "notas": "\"formulario\" no está en el diccionario (tampoco \"documento\").",
+  "guardado": "2026-11-14T12:39:59",
+  "indice_lexico": "cenarec_indice.tsv"
+}

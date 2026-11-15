@@ -4,6 +4,7 @@ Puntuación según docs/metricas.md (versión 1). Sin dependencias externas.
 Lo usa reproducir.py; las funciones están separadas para poder probarlas.
 """
 
+import hashlib
 import json
 import random
 import re
@@ -194,13 +195,32 @@ def proceso_desde_traza(ruta: Path) -> dict:
             "termino_bien": float(r["terminó_bien"]), "modelo": r["modelo"], "traza": ruta.name}
 
 
-def ultima_traza(carpeta: Path, config: str, caso: str) -> Path | None:
-    trazas = sorted(carpeta.glob(f"{config}_{caso}_*.jsonl"))
+def cargar_exclusiones(ruta: Path, raiz: Path = RAIZ) -> frozenset[str]:
+    """Trazas excluidas explícitamente del análisis (eval/exclusiones_experimento.json). Devuelve sus
+    rutas resueltas. Falla cerrado (ErrorVinculacion) si una traza listada existe y su SHA-256 no
+    coincide: una exclusión solo vale para el archivo exacto que se registró. Sin archivo: ninguna."""
+    if not ruta.exists():
+        return frozenset()
+    datos = json.loads(ruta.read_text(encoding="utf-8"))
+    excluidas, problemas = set(), []
+    for e in datos.get("trazas_excluidas", []):
+        p = (raiz / e["ruta"]).resolve()
+        if p.exists() and hashlib.sha256(p.read_bytes()).hexdigest() != e["sha256"]:
+            problemas.append(f"la traza excluida {Path(e['ruta']).name} cambió (SHA-256 distinto)")
+        excluidas.add(str(p))
+    if problemas:
+        raise ErrorVinculacion(problemas)
+    return frozenset(excluidas)
+
+
+def ultima_traza(carpeta: Path, config: str, caso: str, excluidas: frozenset[str] = frozenset()) -> Path | None:
+    trazas = sorted(t for t in carpeta.glob(f"{config}_{caso}_*.jsonl") if str(t.resolve()) not in excluidas)
     return trazas[-1] if trazas else None
 
 
 def evaluar(experimento: str, referencia: dict[str, dict], raiz: Path = RAIZ, *,
-            configuraciones: list[str] | None = None, repeticiones: int | None = None) -> list[dict]:
+            configuraciones: list[str] | None = None, repeticiones: int | None = None,
+            excluidas: frozenset[str] = frozenset()) -> list[dict]:
     """Una fila por configuración × repetición × caso de la referencia.
 
     Conjunto esperado: `configuraciones` y `repeticiones` (rep1..repN) si se indican (reproducir.py
@@ -246,7 +266,7 @@ def evaluar(experimento: str, referencia: dict[str, dict], raiz: Path = RAIZ, *,
             dir_rep = presentes[config] / rep
             dir_res = raiz / "resultados" / experimento / config / rep
             for caso, ref in referencia.items():
-                traza = ultima_traza(dir_rep, config, caso)
+                traza = ultima_traza(dir_rep, config, caso, excluidas)
                 if traza is None:
                     invalidas.append(f"{config}/{rep}/{caso}: no hay traza de la ejecución esperada")
                     continue

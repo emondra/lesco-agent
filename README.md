@@ -1,76 +1,92 @@
 # lesco-agent
 
-**LESCO-Agent: Diseño y evaluación de un agente inteligente basado en Skills y MCP para la generación
-asistida de secuencias en Lengua de Señas Costarricense a partir de audio en español.**
+**LESCO-Agent:** un agente basado en un modelo de lenguaje que, a partir de una frase en español,
+propone una **secuencia candidata** de entradas del Diccionario LESCO del CENAREC (Lengua de Señas
+Costarricense). Usa herramientas expuestas con el Model Context Protocol (MCP), una Skill
+procedimental opcional y una política de permisos aplicada por el host, y deja una traza completa de
+cada ejecución.
 
-Proyecto final del curso *Inteligencia Artificial Distribuida* — Maestría Profesional en Ingeniería del
-Software con énfasis en IA Aplicada, Universidad CENFOTEC (2026).
+> **No es un traductor a LESCO ni sustituye a intérpretes humanos.** Propone entradas de un diccionario
+> en el orden del español; no modela la gramática de LESCO ni sus rasgos no manuales.
 
-> **Estado (2026-11-13):** el agente, el servidor MCP, la Skill, la política, las trazas, la evaluación y
-> la reproducción están implementados y cubiertos por pruebas automatizadas (commit `e254f68`).
-> **Todavía no hay resultados del experimento A/B con el modelo real.** Entrega final: 17 de noviembre de 2026.
-> Ver [PLAN_PROYECTO.md](PLAN_PROYECTO.md) (§6 y §6.6) y [TODO.md](TODO.md).
+Este repositorio contiene **solo la implementación técnica**: el agente, el servidor MCP, la Skill,
+las políticas, la evaluación, las pruebas, los datos sintéticos y la evidencia de ejecución. Los
+documentos académicos del proyecto se entregan aparte y no forman parte del repositorio.
 
-## Problema
+## Arquitectura
 
-Las personas sordas usuarias de la Lengua de Señas Costarricense (LESCO) pueden enfrentar barreras de
-acceso a información transmitida oralmente en entornos educativos, institucionales y de atención al
-público, donde la disponibilidad de interpretación humana puede ser limitada.
+```
+ caso (frase en español)        Skill (solo config. B)
+          │                            │ procedimiento
+          ▼                            ▼
+ ┌──────────────────── host (código) ─────────────────────┐
+ │  Agente (agente/agente.py) ◄──► Política y vinculación │──► trazas JSONL (una por ejecución)
+ └───────────────────────────────────┬────────────────────┘
+                                     │ llamadas permitidas (MCP, stdio)
+                                     ▼
+              Servidor MCP (mcp_server/servidor_lesco.py) ──► índice CENAREC (1104 entradas)
+```
 
-LESCO-Agent explora si un agente basado en una Skill procedimental y un servidor MCP propio puede
-proponer **secuencias candidatas** de señas tomadas de un vocabulario LESCO validado, a partir de
-español hablado o escrito. **No es un traductor ni sustituye a intérpretes humanos.**
-
-## Pregunta de investigación
-
-¿En qué medida la incorporación de una Skill procedimental mejora la precisión en la selección de
-secuencias de LESCO por parte de un agente inteligente, en comparación con el mismo agente sin dicha
-Skill, y qué impacto tiene sobre el tiempo de procesamiento y el consumo de recursos?
-
-## Arquitectura aprobada
-
-1. **Entrada:** audio en español → transcripción (STT), normalización y segmentación.
-2. **Agente:** modelo de lenguaje + `SKILL.md` + política de permisos.
+1. **Entrada:** una frase en español (texto) asociada a un caso.
+2. **Agente:** `claude-sonnet-5-5` por la API de Claude, con `SKILL.md` solo en la configuración B.
 3. **Servidor MCP propio:** `obtener_transcripcion`, `buscar_sena`, `validar_secuencia` y
-   `guardar_resultado`, con validación del lado del servidor contra el vocabulario LESCO. Cada ejecución
-   del agente arranca el servidor **vinculado a su caso** (`--caso`): solo entrega la transcripción y solo
-   guarda el resultado de ese caso (decisión D18).
-4. **Salida:** secuencia de señas con indicadores de incertidumbre y segmentos sin cobertura.
-5. **Transversal:** una traza por ejecución (llamadas, decisiones, tokens, duración).
+   `guardar_resultado`, con validación del lado del servidor contra el vocabulario. Cada ejecución
+   arranca el servidor **vinculado a su caso** (`--caso`): solo entrega la transcripción y solo guarda
+   el resultado de ese caso (D18).
+4. **Salida:** la secuencia validada, con `SIN_COBERTURA` donde no hay entrada.
+5. **Transversal:** una traza por ejecución (llamadas, decisiones de política, tokens y duración).
 
-El vocabulario será un subconjunto del Diccionario LESCO del CENAREC, citado entrada por entrada.
-El agente usará `claude-sonnet-5-5` a través de la API de Claude, como en el kit del curso.
-El experimento se ejecuta sobre texto fijo; el reconocimiento de voz se usa en la demostración. El avatar 3D de la propuesta original se plantea como trabajo futuro. Detalles y justificación en
-[PLAN_PROYECTO.md](PLAN_PROYECTO.md#6-arquitectura-mínima-viable-aprobada-d).
+**Qué decide cada parte:** la Skill decide el *procedimiento* (qué omitir, buscar por el lema, cuándo
+aceptar una coincidencia, el orden y cuándo usar `SIN_COBERTURA`). El código impone los *límites*,
+independientemente del modelo: la política (permitir, denegar u ocultar herramientas; como máximo 1
+escritura), la envoltura de los resultados de herramientas como datos no confiables, la validación de
+cada ID, la vinculación al caso (D18) y la validez documental de cada traza antes de puntuarla (D19).
 
-## Principios del proyecto
-
-- Ningún vocabulario LESCO sin fuente verificable.
-- Ninguna referencia bibliográfica sin haber sido leída.
-- Toda cifra experimental se regenera desde las trazas del repositorio.
-- Ningún dato personal real sin anonimizar.
-- Uso de IA declarado.
+El sistema trabaja sobre texto: el reconocimiento de voz no está implementado.
 
 ## Estructura del repositorio
 
-| Archivo | Contenido |
+| Ruta | Contenido |
 |---|---|
-| `PLAN_PROYECTO.md` | Requisitos, cobertura, viabilidad, riesgos, arquitectura y fases. |
-| `TODO.md` | Tareas pendientes por fase. |
-| `docs/` | Propuesta H1, referencias, datos y ética, registro de uso de IA. |
-| `data/lexicon/` | Índice del Diccionario LESCO del CENAREC (1104 entradas) y su procedencia. |
-| `mcp_server/` | Servidor MCP propio: `obtener_transcripcion`, `buscar_sena`, `validar_secuencia`, `guardar_resultado`. |
-| `agente/` | Agente (adaptado del kit de la clase 3), cliente MCP, configuraciones A/B/demo, ejecutor de casos y lector de trazas. |
-| `skill/SKILL.md` | Skill procedimental (solo en la configuración B). |
-| `politica/` | Políticas de permisos del experimento y de la demo, con su justificación. |
-| `eval/` | Casos de evaluación, guía de anotación, tokenizador, kappa, construcción de la referencia y puntuación (`puntuar.py`). |
-| `reproducir.py` | Comando único que regenera las tablas desde las trazas (falla cerrado si falta o es inconsistente alguna ejecución). |
-| `evidencia/` | Registro de evidencia de pruebas (`registrar_pruebas.py`), su índice y los informes de las etapas de integridad. Los originales de cada registro están en `evidencia/privado/`, que **no se versiona**. |
-| `tests/` | Pruebas automáticas. |
+| `agente/` | Agente, cliente MCP, configuraciones A/B/demo, ejecutor de casos, ejecutor supervisado sin reintentos y lector de trazas |
+| `mcp_server/` | Servidor MCP propio y carga del índice |
+| `skill/SKILL.md` | Skill procedimental (solo en la configuración B) |
+| `politica/` | Políticas de permisos del experimento y de la demo, con su justificación |
+| `data/lexicon/` | Índice del Diccionario LESCO del CENAREC (1104 entradas) y su procedencia |
+| `eval/` | Casos sintéticos, guía de anotación, plantilla, prompts de los anotadores LLM, tokenizador, kappa, construcción de referencias, puntuación, especificación y evaluador de ataques, y exclusiones del análisis |
+| `reproducir.py` | Regenera las tablas de métricas desde las trazas (falla cerrado si falta o es inconsistente alguna ejecución) |
+| `reproduccion/` | Prueba de reproducción en un clon limpio |
+| `trazas/`, `resultados/` | Evidencia de ejecución: piloto, experimento A/B (`experimento/`) y ataques de inyección (`ataques/`), con los manifiestos `supervisor.jsonl` |
+| `evidencia/` | Registrador de evidencia de pruebas y los informes técnicos de integridad |
+| `docs/metricas.md` | Definición de las métricas, congeladas antes de medir |
+| `docs/datos_y_etica.md` | Procedencia de los datos y uso del vocabulario |
+| `tests/` | Pruebas automatizadas |
 
-## Requisitos
+## Requisitos e instalación
 
-Python 3.10 o superior. Sin dependencias externas.
+- Python 3.10 o superior. Sin dependencias externas: el agente usa la API por HTTP con la biblioteca
+  estándar.
+
+```bash
+git clone https://github.com/emondra/lesco-agent.git
+cd lesco-agent
+python -m unittest discover -s tests
+```
+
+## Configuración del entorno
+
+Solo hace falta para ejecutar el agente o los anotadores con el modelo real, que tiene costo. Las
+pruebas, la demo simulada, el evaluador de ataques y la puntuación **no** necesitan clave.
+
+La clave va en la variable de entorno `ANTHROPIC_API_KEY` o en un archivo `.env` local en la raíz
+(ignorado por git), nunca en el código, las configuraciones ni las trazas:
+
+```bash
+setx ANTHROPIC_API_KEY "sk-ant-api..."
+```
+
+Si la clave es de organización y no está asociada a un workspace (la API responde *"not scoped to a
+workspace"*), configure también `ANTHROPIC_WORKSPACE_ID`.
 
 ## Pruebas
 
@@ -78,115 +94,85 @@ Python 3.10 o superior. Sin dependencias externas.
 python -m unittest discover -s tests -v
 ```
 
-Son pruebas locales, con el modelo **simulado** y datos sintéticos: **no usan la API**.
-
-Para registrarlas como evidencia (salida original, metadatos y SHA-256, guardados en
-`evidencia/privado/`), primero se registra una ejecución con una etiqueta nueva, en minúsculas:
+Son pruebas locales con el modelo **simulado** y datos sintéticos: **no usan la API**. Para registrarlas
+como evidencia (salida original, metadatos y SHA-256, en `evidencia/privado/`, que no se versiona):
 
 ```bash
 python evidencia/registrar_pruebas.py registrar --suite completa --tipo ejecucion --etiqueta mi-etiqueta
-```
-
-Después se verifica el registro creado. La carpeta tiene la forma `AAAAMMDD-HHMMSS_mi-etiqueta`;
-el registrador la indica al terminar:
-
-```bash
 python evidencia/registrar_pruebas.py verificar evidencia/privado/AAAAMMDD-HHMMSS_mi-etiqueta/original
 ```
 
 ## Servidor MCP
 
-Uso por separado, sin vincular a un caso:
-
 ```bash
-python mcp_server/servidor_lesco.py --salidas resultados/salidas
-```
-
-Vinculado a un caso (así lo arranca el agente):
-
-```bash
+python mcp_server/servidor_lesco.py --salidas resultados/salidas                       # sin vincular
 python mcp_server/servidor_lesco.py --salidas resultados/salidas --casos eval/demo/casos_demo.jsonl --caso demo-001
 ```
 
-Habla MCP por stdio (JSON-RPC 2.0, un mensaje por línea). El servidor valida cada argumento,
-rechaza IDs que no existen en el diccionario y nunca sobrescribe un resultado guardado.
-
-`--caso` es **opcional** en el servidor. Si se indica, exige `--casos` y que el caso exista en ese archivo.
-Con un caso inválido o inexistente, el servidor no arranca. Vinculado, solo entrega la transcripción y
-solo guarda el resultado de ese caso.
+Habla MCP por stdio (JSON-RPC 2.0, un mensaje por línea). Valida cada argumento, rechaza IDs que no
+existen en el diccionario y nunca sobrescribe un resultado guardado. Con un caso inválido o
+inexistente, no arranca.
 
 ## Agente
 
-Configure la clave de la API solo como variable de entorno (nunca en archivos del repositorio):
+`--caso` es **obligatorio**: no hay caso implícito. Se valida el identificador completo (1–40
+caracteres: letras ASCII, dígitos, `_` o `-`). El agente se niega a ejecutar si la configuración no
+arranca el servidor con exactamente una pareja `--caso {caso}`.
+
+Las configuraciones A y B solo difieren en las instrucciones: B añade `skill/SKILL.md` a las
+instrucciones genéricas de A. El modelo, el esfuerzo, la política, los límites y el servidor son
+iguales.
+
+**Agente simulado (sin clave ni costo):** recorre el bucle completo, la política y el servidor MCP con
+un guion fijo.
 
 ```bash
-setx ANTHROPIC_API_KEY "sk-ant-api..."
+python agente/agente.py --config agente/configs/demo.json --simulado --caso demo-001 --salidas resultados/demo_defensa/salidas --trazas resultados/demo_defensa/trazas
+python agente/leer_traza.py resultados/demo_defensa/trazas/*.jsonl
 ```
 
-Si la clave es de organización y no está asociada a un workspace (la API responde
-*"not scoped to a workspace"*), configure también el ID del workspace:
+Con la política de la demo, la escritura requiere aprobación humana: al responder `s`, la primera se
+guarda y la segunda la deniega la política (máximo 1). Sin terminal interactiva o sin respuesta, la
+escritura se deniega. **La evidencia de lo ocurrido es la traza y el archivo guardado**, no el mensaje
+final del modelo simulado, que es fijo. Use carpetas nuevas: el servidor nunca sobrescribe.
 
-```bash
-setx ANTHROPIC_WORKSPACE_ID "wrkspc_..."
-```
-
-`--caso` es **obligatorio** en el agente: no hay caso implícito. Se valida el identificador completo
-(1–40 caracteres: letras ASCII, dígitos, `_` o `-`, empezando por letra o dígito). El agente se niega a
-ejecutar si la configuración no arranca el servidor con exactamente una pareja `--caso {caso}`.
-`agente/configs/A.json`, `B.json` y `demo.json` ya la incluyen.
-
-Las configuraciones A y B difieren en `instrucciones`, `nombre` y `descripcion`. La diferencia
-experimental relevante es la Skill: B añade `skill/SKILL.md` a las instrucciones genéricas de A. El
-resto (modelo, esfuerzo, política, límites y servidor) es igual en ambas.
-
-Sin clave ni costo (modelo simulado, recorre el bucle completo y la política):
-
-```bash
-python agente/agente.py --config agente/configs/demo.json --simulado --caso demo-001
-```
-
-Con el modelo real (`claude-sonnet-5-5`):
+**Con el modelo real** (con costo):
 
 ```bash
 python agente/agente.py --config agente/configs/B.json --caso demo-001 --casos eval/demo/casos_demo.jsonl
+python agente/ejecutar_supervisado.py --tope-usd <T> --max-corridas 30        # experimento A/B, sin reintentos
 ```
 
-Corrida de varias configuraciones y repeticiones (reanudable):
+El comodín `*` lo expande bash; en PowerShell hay que pasar las rutas explícitamente, por ejemplo
+`(Get-ChildItem resultados\demo_defensa\trazas\*.jsonl).FullName`. La carpeta `resultados/demo_defensa/`
+está ignorada por git.
+
+## Evaluación
+
+Todo lo siguiente se ejecuta **sin la API**. Las definiciones están en
+[docs/metricas.md](docs/metricas.md).
+
+**Ataques de inyección indirecta**, desde las trazas publicadas:
 
 ```bash
-python agente/ejecutar_casos.py --configs A B --repeticiones 3 --casos eval/casos.jsonl
+python eval/evaluar_ataques.py --salida resultados/ataques/resumen.md
 ```
 
-Resumen de trazas:
+Lee `eval/ataques/ataques.json` (criterios fijados antes de ejecutar) y las trazas de
+`trazas/ataques/`, y calcula por ataque y configuración el éxito del atacante, los intentos del
+modelo, las denegaciones, los rechazos, la validez de la traza, la tarea legítima, la negativa del
+modelo y la contaminación de la salida.
+
+**Métricas del experimento A/B:**
 
 ```bash
-python agente/leer_traza.py trazas/experimento/*/*/*.jsonl --csv resultados/metricas_trazas.csv
+python reproducir.py --experimento experimento --referencia <referencia.jsonl> --salida <carpeta>
 ```
 
-El comodín `*` lo expande bash. En PowerShell o cmd hay que pasar las rutas de las trazas
-explícitamente.
-
-## Reproducir los resultados
-
-Un solo comando regenera todas las tablas desde las trazas y los resultados guardados, sin llamar
-a la API (definiciones en [docs/metricas.md](docs/metricas.md)):
-
-```bash
-python reproducir.py
-```
-
-Escribe `resultados/tablas/experimento_filas.csv` y `resultados/tablas/experimento_resumen.md`.
-
-Por defecto espera las configuraciones `A` y `B` con 3 repeticiones, los mismos valores que
-`agente/ejecutar_casos.py`. Se pueden cambiar con `--configs` (una o más configuraciones) y
-`--repeticiones` (un número entero, 1 o más). Por ejemplo:
-
-```bash
-python reproducir.py --configs A B --repeticiones 3
-```
-
-Antes de puntuar comprueba que existan todas las ejecuciones esperadas y que cada traza sea
-documentalmente consistente con su resultado y su caso (decisión D19).
+Antes de puntuar, comprueba que existan todas las ejecuciones esperadas (por defecto, A y B con 3
+repeticiones) y que cada traza sea documentalmente consistente con su resultado y su caso (D19). La
+traza de un fallo de autenticación previo al experimento se excluye por ruta y SHA-256
+(`eval/exclusiones_experimento.json`).
 
 | Código de salida | Significado |
 |---|---|
@@ -194,54 +180,65 @@ documentalmente consistente con su resultado y su caso (decisión D19).
 | 2 | Falta la referencia o las trazas del experimento |
 | 3 | Alguna ejecución esperada falta o no es consistente; no se generan tablas ni puntuaciones parciales |
 
-## Estado de las pruebas y de la evidencia
+Las referencias se construyen con `eval/construir_referencia.py` (modos `unico` y `consenso`) a
+partir de anotaciones con el formato de `eval/anotaciones/plantilla.tsv`, y la concordancia entre
+anotadores se mide con `eval/kappa.py`.
+
+## Reproducibilidad: qué se puede regenerar desde este repositorio
+
+| Resultado | Desde este repositorio |
+|---|---|
+| Comportamiento del código (pruebas) | Sí |
+| Evaluación de los ataques de inyección | Sí, desde `trazas/ataques/` |
+| Métricas de proceso por corrida (tokens, duración, pasos, llamadas) | Sí, desde las trazas (`agente/leer_traza.py`) |
+| Métricas de calidad (F1, exacta, IC 95 %) y kappa | **No**: requieren las anotaciones y las referencias, que no se publican |
+
+**Limitación:** las anotaciones de los dos anotadores LLM y las referencias derivadas **no se
+publican**. Sin ellas, `reproducir.py` termina con el código 2. La evidencia completa necesaria para
+regenerar las métricas de calidad se entrega por separado, en un paquete académico de reproducción,
+junto con la documentación académica del proyecto.
+
+**Prueba en un clon limpio** (sin la API; copia solo los archivos no ignorados a una carpeta nueva):
+
+```bash
+python reproduccion/prueba_clon_limpio.py <carpeta_nueva> [--paquete <paquete_de_reproduccion>]
+```
+
+Sin paquete, comprueba la suite de pruebas, la evaluación de los ataques y que `reproducir.py` se
+niegue a puntuar sin referencia. Con paquete, también el kappa, la reconstrucción de las referencias y
+las tablas de calidad.
+
+Volver a ejecutar el agente o los anotadores requiere la API, tiene costo y no es determinista.
+
+## Datos y privacidad
+
+- Los casos son **sintéticos** y no contienen datos personales.
+- El vocabulario es un índice de entradas del Diccionario LESCO del CENAREC, citado entrada por entrada
+  ([data/lexicon/FUENTE.md](data/lexicon/FUENTE.md)).
+- **No se versionan:** `.env`; `evidencia/privado/`; las anotaciones de los anotadores
+  (`eval/anotaciones/anotador*`); las referencias derivadas (`eval/referencias/`) y los desacuerdos
+  (`eval/desacuerdos.tsv`); la traza del fallo de autenticación previo al experimento; y los
+  documentos académicos del proyecto.
+- La evidencia de `trazas/experimento/`, `resultados/experimento/`, `trazas/ataques/` y
+  `resultados/ataques/` se versiona **byte a byte** (`.gitattributes`), para que sus SHA-256 coincidan
+  en cualquier sistema.
+
+Para publicar un registro de evidencia de pruebas: el autor revisa la candidata
+(`evidencia/privado/<registro>/candidata/`), decide y autoriza expresamente su publicación, y solo
+después se ejecuta `registrar_pruebas.py aprobar`. Este comando no concede ni comprueba la
+autorización; deja constancia del texto que se le pasa.
+
+## Estado
 
 | Nivel | Estado |
 |---|---|
-| Pruebas automatizadas (modelo simulado o datos sintéticos) | **97/97** aprobadas en el registro E2-5 (`20261113-201818_suite-completa-e25`). Describen el comportamiento del código, no resultados científicos |
-| Experimento A/B con el modelo real (A×3, B×3) y ataques de inyección | **Pendiente.** Requiere completar la anotación, el kappa, la adjudicación y el congelamiento del conjunto de evaluación |
-| Afirmaciones sobre la efectividad de la Skill o la resistencia a la inyección | **Ninguna todavía** |
+| Pruebas automatizadas (modelo simulado o datos sintéticos) | 189/189 aprobadas (2026-11-14). Describen el comportamiento del código, no resultados científicos |
+| Experimento A/B con el modelo real (48 casos × A/B × 3) | 288/288 corridas válidas según D18/D19 (2026-11-14) |
+| Ataques de inyección indirecta | 6 ataques × A/B, 1 repetición, 12 trazas válidas (2026-11-14) |
 
-El commit `e254f68` corresponde al código registrado en E2-5. Se verificó comparando el SHA-256
-normalizado a LF: 30 de 31 archivos de código coinciden, y la única diferencia es `.gitignore`,
-modificado después del registro y que no se ejecuta.
-
-Esta verificación demuestra consistencia documental. Git aporta trazabilidad de versiones, no una
-autenticidad certificada por terceros.
-
-Detalle en [evidencia/etapa1_servidor_mcp.md](evidencia/etapa1_servidor_mcp.md),
+Informes técnicos de integridad: [evidencia/etapa1_servidor_mcp.md](evidencia/etapa1_servidor_mcp.md),
 [evidencia/etapa2_agente.md](evidencia/etapa2_agente.md) y [evidencia/INDICE.md](evidencia/INDICE.md).
-
-## Datos privados y publicación de evidencia
-
-> **Advertencia:** no uses datos personales reales ni publiques evidencia sin revisión y autorización
-> humana explícita.
-
-No se versionan (están ignorados por git):
-
-- `evidencia/privado/`, con los originales y las candidatas de cada registro;
-- `Solicitud/`;
-- los archivos del segundo anotador;
-- `.env`.
-
-Para publicar la evidencia de un registro, el orden es:
-
-1. El autor revisa la candidata (`evidencia/privado/<registro>/candidata/`, incluido su `PUBLICACION.json`).
-2. El autor decide y autoriza expresamente su publicación.
-3. Solo después se ejecuta `registrar_pruebas.py aprobar`, que deja constancia de esa autorización.
-
-`aprobar` **no** concede ni comprueba la autorización. Lo que hace es:
-
-- comprobar que la candidata está íntegra y no contiene coincidencias sensibles;
-- copiarla a `evidencia/pruebas/`;
-- registrar en `evidencia/APROBACIONES.md` el texto de autorización que se le pasa.
-
-Mientras no exista revisión y autorización humana explícita, la candidata permanece en estado
-PENDIENTE_REVISION_HUMANA. La aprobación local y la publicación en GitHub son operaciones distintas.
-
-La clave de la API va solo en una variable de entorno o en un `.env` local. Nunca en el código, las
-configuraciones, las trazas ni la evidencia.
 
 ## Autoría
 
-Elmer Mondragón Prieto (proyecto individual). Profesor: Jean Carlo Álvarez Ramírez.
+Elmer Mondragón Prieto (proyecto individual, 2026).

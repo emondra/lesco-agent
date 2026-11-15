@@ -118,3 +118,74 @@ con el modelo real, que sigue pendiente. Este documento todavía no contiene cif
 **Motivo:** evitar que se puntúen ejecuciones incompletas, mezcladas entre casos o sin vinculación
 demostrada del servidor (D18 y D19, `PLAN_PROYECTO.md` §6). Detalle en `evidencia/etapa2_agente.md`
 §5.
+
+### 2026-11-14 · Referencia con dos anotadores LLM (D20). Las fórmulas no cambian
+
+Registro **previo**: se escribe antes de ejecutar el anotador LLM A, antes de calcular ningún acuerdo y
+antes de construir ninguna referencia. Ninguna cifra de esta entrada procede de esas anotaciones.
+
+**Qué no cambia.** Las definiciones y fórmulas de las secciones 2 a 4 (`exacta`, `precision`,
+`exhaustividad`, `f1`, `sin_cobertura_ok`, `guardado`, las métricas de proceso y costo, la agregación,
+el bootstrap pareado con 10 000 remuestreos y semilla 20261117) y la normalización de §1. Este documento
+sigue en la **versión 1**. Las secciones 1 y 5 se conservan tal como se congelaron; esta entrada indica
+cómo se aplican ahora.
+
+**Qué cambia: el origen de la referencia (§1).** El diseño congelado preveía una referencia adjudicada
+a partir de un anotador humano (el autor) y un LLM (D10). Según informó el autor, el profesor autorizó
+verbalmente usar LLM como anotadores, y el autor no hará la anotación humana (D20). Por eso:
+
+- **Anotadores:** el anotador 2 (`claude-opus-5-5`, `eval/prompts/anotador2_v1.md`) y el anotador LLM A
+  (`eval/prompts/anotador_llm_a_v1.md`, con un modelo distinto del agente y del anotador 2, que se
+  confirmará antes del primer consumo). Los dos usan la misma guía congelada v1 y el mismo índice, y
+  ninguno ve las etiquetas del otro ni salidas del agente.
+- **No hay adjudicación** ni ningún tercer anotador. En su lugar se usan tres referencias.
+
+**Acuerdo entre los dos anotadores LLM** (`eval/kappa.py`):
+
+1. kappa de Cohen sobre **todas** las posiciones (240). Lo inflan las palabras que la plantilla ya
+   sugiere como `OMITIR`;
+2. kappa de Cohen solo sobre las **palabras de contenido** (las 166 posiciones sin sugerencia en la
+   plantilla). **Es la medida principal**;
+3. **acuerdo exacto por caso:** proporción de los 48 casos con todas sus etiquetas iguales.
+
+Se reporta como **concordancia entre dos LLM**, nunca como acuerdo entre personas ni como medida de
+corrección.
+
+**Tres referencias, definidas de antemano:**
+
+- **R1:** la secuencia de referencia (§1) obtenida de las etiquetas del anotador 2, en los 48 casos.
+- **R2:** la misma construcción con las etiquetas del anotador LLM A, en los 48 casos.
+- **Rc:** solo los casos con **acuerdo exacto completo** entre los dos anotadores (todas las posiciones
+  iguales), con esas etiquetas comunes. Los demás casos quedan fuera de Rc.
+
+R1, R2 y Rc son **referencias automáticas**, no verdad lingüística validada por personas.
+
+**Cómo se reportan:**
+
+- **Desacuerdos:** el número total, por posición y por tipo (dos IDs distintos, un ID frente a
+  `SIN_COBERTURA`, una palabra de contenido frente a `OMITIR`, y diferencias en `+`), con
+  `eval/desacuerdos.tsv` como fuente. Los ejemplos que se citen en el artículo se tomarán de esa lista.
+- **Casos excluidos de Rc:** su número, sus `caso_id` y su dificultad prevista. Rc se reporta siempre
+  con su tamaño (*n*).
+- **Métricas:** las de §2–4 se calculan por separado con R1, R2 y Rc (`reproducir.py --referencia`).
+  Las métricas de proceso y costo no dependen de la referencia.
+- **Sensibilidad de B frente a A:** para `f1` y `exacta` se reportan la media de las diferencias y su
+  IC95 % con cada referencia. La conclusión sobre el efecto de la Skill se considera **robusta** solo si
+  la diferencia B − A en `f1` tiene el mismo signo en R1, R2 y Rc y su IC95 % excluye el 0 en las tres.
+  En cualquier otro caso se reporta como **dependiente de la referencia** o **no concluyente**.
+- **Dificultad (§5):** se aplican los criterios que se derivan de cada referencia (`SIN_COBERTURA`, `+`,
+  12 palabras o más). Los motivos `variante_sentido` y `sinonimo` ya no pueden confirmarse en una
+  adjudicación: se usan los **previstos** (`eval/casos_meta.jsonl`, 25 de 48 casos difíciles previstos),
+  y se declara así.
+
+**Limitaciones que se declaran:**
+
+- No existe validación humana de las etiquetas.
+- Los dos anotadores son modelos del mismo proveedor, así que su independencia es parcial.
+- La Skill de la configuración B operacionaliza la misma guía que siguen los anotadores, lo que puede
+  sesgar las referencias a favor de B.
+- El kappa mide concordancia, no corrección lingüística.
+- No se ha demostrado que los resultados se generalicen a la traducción real a LESCO (ya declarado en §6).
+
+**Motivo:** completar la evaluación de un proyecto individual sin presentar anotaciones automáticas como
+humanas y sin cambiar silenciosamente el diseño congelado (D20, `PLAN_PROYECTO.md` §6).

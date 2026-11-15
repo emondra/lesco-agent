@@ -233,3 +233,52 @@ resultados/humo/
 # LESCO-Agent: evaluación independiente del segundo anotador
 /eval/anotaciones/anotador2.tsv
 /eval/anotaciones/anotador2_respuestas.jsonl
+
+# LESCO-Agent: anotador LLM A (registro y TSV privados, como los del anotador 2)
+/eval/anotaciones/anotador_llm_a.tsv
+/eval/anotaciones/anotador_llm_a_respuestas.jsonl
+
+# LESCO-Agent: derivados con etiquetas de los anotadores (D20); su publicación se decide aparte
+/eval/referencias/
+/eval/referencia.jsonl
+/eval/desacuerdos.tsv
+/eval/anotaciones/adjudicada.tsv
+
+# LESCO-Agent: anotación humana interrumpida del anotador 1 (no se usó; no se publica)
+/eval/anotaciones/anotador1.tsv
+/eval/anotaciones/anotador1_incorrecto_*.tsv
+
+# LESCO-Agent: ejecuciones locales de la demo
+/resultados/demo_defensa/
+
+# LESCO-Agent: ENTREGA ACADÉMICA, separada del repositorio técnico (decisión del autor, 2026-11-14).
+# Estos archivos se conservan solo en local y se entregan a la universidad por otro medio.
+/articulo/
+/presentacion/
+/docs/articulo_borrador.md
+/docs/presentacion_borrador.md
+/docs/resultados.md
+/docs/costos.md
+/docs/reproducibilidad.md
+/eval/acuerdo.md
+/resultados/tablas/
+/reproduccion/preparar_paquete.py
+# Bibliografía, LaTeX y presentaciones académicas en la raíz o en docs/ (reglas acotadas: no bloquean
+# archivos técnicos con esas extensiones en otras carpetas).
+/*.bib
+/*.tex
+/*.pptx
+/docs/*.bib
+/docs/*.tex
+/docs/*.pptx
+# Documentos académicos retirados del seguimiento el 2026-11-14 (`git rm --cached`; la copia local se
+# conserva para la entrega a la universidad).
+/PLAN_PROYECTO.md
+/TODO.md
+/docs/propuesta_H1.md
+/docs/referencias.md
+/docs/uso_de_ia.md
+
+# LESCO-Agent: traza histórica del HTTP 401 (prueba previa al experimento; contiene un request_id).
+# Se conserva localmente y está excluida del análisis en eval/exclusiones_experimento.json.
+/trazas/experimento/A/rep1/A_c001_20261114_072445_357974.jsonl

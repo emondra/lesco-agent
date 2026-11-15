@@ -1,0 +1,15 @@
+{
+  "caso_id": "c005",
+  "texto_fuente": "El horario es de lunes a viernes.",
+  "secuencia": [
+    "CENAREC-350",
+    "CENAREC-604"
+  ],
+  "glosas": [
+    "HORARIO",
+    "LUNES-A-VIERNES"
+  ],
+  "notas": "",
+  "guardado": "2026-11-14T12:37:23",
+  "indice_lexico": "cenarec_indice.tsv"
+}
