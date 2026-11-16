@@ -42,7 +42,8 @@ independientemente del modelo: la política (permitir, denegar u ocultar herrami
 escritura), la envoltura de los resultados de herramientas como datos no confiables, la validación de
 cada ID, la vinculación al caso (D18) y la validez documental de cada traza antes de puntuarla (D19).
 
-El sistema trabaja sobre texto: el reconocimiento de voz no está implementado.
+El experimento trabaja sobre texto. La demo web (`demo_web/`) incorpora, como funcionalidad posterior y
+no evaluada experimentalmente, la entrada por voz mediante el reconocimiento de voz del navegador.
 
 ## Estructura del repositorio
 
