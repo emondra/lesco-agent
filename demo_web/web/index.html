@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LESCO-Agent · Visor local</title>
+<link rel="stylesheet" href="/estilo.css">
+</head>
+<body data-modo="real">
+<header class="cabecera">
+  <div class="marca">
+    <h1>LESCO-Agent</h1>
+    <span class="sub">Agente + Skill + MCP · visor local</span>
+  </div>
+  <div id="insignia-modo" class="insignia" role="status" aria-live="polite"></div>
+  <nav class="modos" aria-label="Modo">
+    <button id="btn-modo-real" type="button" class="pestana" aria-pressed="true">Traza real</button>
+    <button id="btn-modo-sim" type="button" class="pestana" aria-pressed="false">Simulación local</button>
+    <button id="btn-pantalla" type="button" class="secundario" title="Tecla F">Pantalla completa</button>
+  </nav>
+</header>
+
+<p class="aviso">LESCO-Agent propone secuencias candidatas de entradas del Diccionario LESCO del CENAREC.
+  No es un traductor validado y no sustituye a intérpretes humanos.</p>
+
+<section id="panel-real" class="selector">
+  <label>Configuración
+    <select id="sel-config"></select>
+  </label>
+  <label>Repetición
+    <select id="sel-rep"></select>
+  </label>
+  <label>Caso
+    <select id="sel-caso"></select>
+  </label>
+  <p id="origen-real" class="origen"></p>
+</section>
+
+<section id="panel-sim" class="selector" hidden>
+  <p class="origen">Caso <strong>demo-001</strong> · configuración <strong>demo</strong> (instrucciones de B + Skill;
+    el guardado requiere aprobación humana) · turnos del modelo = <strong>guion fijo</strong>, sin API ·
+    servidor MCP y política reales · carpeta temporal aislada.</p>
+  <p id="estado-sim" class="estado-sim" role="status" aria-live="polite"></p>
+</section>
+
+<section class="superior">
+  <article class="tarjeta">
+    <h2>Texto original (español)</h2>
+    <p id="texto-original" class="texto-grande vacio">—</p>
+  </article>
+  <article class="tarjeta">
+    <h2>Configuración</h2>
+    <dl id="configuracion" class="datos"></dl>
+  </article>
+  <article class="tarjeta ancha">
+    <h2>Secuencia candidata de entradas CENAREC</h2>
+    <ol id="secuencia" class="secuencia"></ol>
+    <p id="estado-secuencia" class="estado-secuencia vacio">Aún no hay secuencia validada.</p>
+    <p class="nota">Glosas del diccionario en el orden del español; no es una traducción gramatical a LESCO.</p>
+  </article>
+</section>
+
+<main class="cuerpo">
+  <section class="actividad" aria-labelledby="t-actividad">
+    <h2 id="t-actividad">Actividad del agente</h2>
+    <ol id="linea-tiempo" class="linea-tiempo"></ol>
+    <p id="pendientes" class="pendientes"></p>
+  </section>
+  <section class="detalle" aria-labelledby="detalle-titulo">
+    <h2 id="detalle-titulo">Evento</h2>
+    <div id="aprobacion" class="aprobacion" hidden>
+      <h3>Aprobación humana requerida</h3>
+      <p>La política de la demo marca <code>guardar_resultado</code> como <strong>confirmar</strong>:
+        el host detuvo al agente y espera a una persona.</p>
+      <div class="botones">
+        <button id="btn-aprobar" type="button" class="ok">Aprobar guardado</button>
+        <button id="btn-rechazar" type="button" class="no">Rechazar</button>
+      </div>
+      <pre id="aprobacion-args"></pre>
+    </div>
+    <div id="detalle" class="contenido-detalle">
+      <p class="vacio">Elija el modo y pulse «Iniciar demostración».</p>
+    </div>
+    <div id="contingencia" class="contingencia" hidden>
+      <p id="contingencia-texto"></p>
+      <button id="btn-plan-b" type="button">Mostrar una traza histórica real</button>
+    </div>
+  </section>
+</main>
+
+<footer class="controles">
+  <div class="botones-principales">
+    <button id="btn-iniciar" type="button" class="primario">Iniciar demostración</button>
+    <button id="btn-anterior" type="button" title="Flecha izquierda">◀ Evento anterior</button>
+    <span id="contador" class="contador">0 / 0</span>
+    <button id="btn-siguiente" type="button" class="primario" title="Flecha derecha o espacio">Siguiente evento ▶</button>
+    <button id="btn-reiniciar" type="button" title="Tecla Inicio">Reiniciar visualización</button>
+    <button id="btn-detalles" type="button" aria-pressed="false" title="Tecla D">Mostrar detalles de la herramienta</button>
+  </div>
+  <ul class="leyenda" aria-label="Leyenda">
+    <li class="c-modelo-real">Traza histórica real</li>
+    <li class="c-guion">Agente simulado (guion)</li>
+    <li class="c-mcp">Llamada MCP</li>
+    <li class="c-politica">Decisión de política</li>
+    <li class="c-guardado">Guardado real</li>
+    <li class="c-denegada">Acción denegada</li>
+  </ul>
+</footer>
+<script src="/app.js"></script>
+</body>
+</html>
