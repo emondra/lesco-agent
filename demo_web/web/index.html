@@ -16,6 +16,7 @@
   <nav class="modos" aria-label="Modo">
     <button id="btn-modo-real" type="button" class="pestana" aria-pressed="true">Traza real</button>
     <button id="btn-modo-sim" type="button" class="pestana" aria-pressed="false">Simulación local</button>
+    <button id="btn-modo-voz" type="button" class="pestana" aria-pressed="false">🎤 Demostración por voz</button>
     <button id="btn-pantalla" type="button" class="secundario" title="Tecla F">Pantalla completa</button>
   </nav>
 </header>
@@ -43,6 +44,45 @@
   <p id="estado-sim" class="estado-sim" role="status" aria-live="polite"></p>
 </section>
 
+<section id="panel-voz" class="panel-voz" hidden>
+  <div class="voz-fila">
+    <span id="sello-voz" class="sello-reglas">MOTOR LOCAL DE REGLAS — NO ES UN LLM</span>
+    <span class="selector-motor" role="group" aria-label="Motor de procesamiento">
+      <button id="btn-motor-reglas" type="button" aria-pressed="true">Motor de reglas</button>
+      <button id="btn-motor-ia" type="button" aria-pressed="false" disabled
+              title="Deshabilitada: inicie la demo con -PermitirApi">IA real (API)</button>
+    </span>
+    <button id="btn-microfono" type="button">🎤 Activar micrófono</button>
+    <input id="texto-voz" type="text" maxlength="200" autocomplete="off" spellcheck="true"
+           placeholder="Dicte o escriba una oración en español" aria-label="Oración en español (editable)">
+    <button id="btn-confirmar-voz" type="button" class="primario">Confirmar texto y procesar</button>
+  </div>
+  <div id="aviso-microfono" class="aviso-microfono" role="dialog" aria-labelledby="t-aviso-mic" hidden>
+    <strong id="t-aviso-mic">Antes de activar el micrófono:</strong>
+    el reconocimiento de voz lo hace el navegador y puede depender de servicios externos
+    (por ejemplo, de Google o Microsoft), que reciben el audio. La demo no recibe ni guarda audio: solo
+    el texto que usted confirme. La voz no puede aprobar operaciones.
+    <span class="botones">
+      <button id="btn-mic-continuar" type="button" class="primario">Continuar y activar</button>
+      <button id="btn-mic-cancelar" type="button">Cancelar (escribir a mano)</button>
+    </span>
+  </div>
+  <div id="consentimiento-ia" class="consentimiento-ia" role="dialog" aria-labelledby="t-consentimiento" hidden>
+    <strong id="t-consentimiento">Autorizar UNA ejecución real con la API (tiene costo)</strong>
+    <dl id="consentimiento-datos" class="datos"></dl>
+    <span class="botones">
+      <button id="btn-autorizar-ia" type="button" class="ok">Autorizar esta ejecución (con costo)</button>
+      <button id="btn-cancelar-ia" type="button">Cancelar</button>
+    </span>
+  </div>
+  <div class="voz-pie">
+    <p id="estado-voz" class="estado-voz" role="status" aria-live="polite"></p>
+    <p id="tiempos-voz" class="tiempos-voz"></p>
+    <button id="btn-seguir" type="button" aria-pressed="true" title="Volver a seguir los eventos en vivo">Siguiendo en vivo</button>
+  </div>
+  <ol id="monitor" class="monitor" aria-label="Monitor de etapas"></ol>
+</section>
+
 <section class="superior">
   <article class="tarjeta">
     <h2>Texto original (español)</h2>
@@ -56,6 +96,7 @@
     <h2>Secuencia candidata de entradas CENAREC</h2>
     <ol id="secuencia" class="secuencia"></ol>
     <p id="estado-secuencia" class="estado-secuencia vacio">Aún no hay secuencia validada.</p>
+    <button id="btn-ver-senas" type="button" class="btn-senas" hidden>▶ Ver señas CENAREC</button>
     <p class="nota">Glosas del diccionario en el orden del español; no es una traducción gramatical a LESCO.</p>
   </article>
 </section>
@@ -88,6 +129,28 @@
   </section>
 </main>
 
+<section id="visor-cenarec" class="visor" role="dialog" aria-modal="true" aria-labelledby="t-visor" hidden>
+  <div class="visor-caja">
+    <header class="visor-cabecera">
+      <h2 id="t-visor">Visor de señas CENAREC</h2>
+      <span id="visor-prueba" class="visor-prueba" hidden>CONTENIDO DE PRUEBA LOCAL — NO ES CENAREC</span>
+      <button id="btn-visor-cerrar" type="button">✕ Cerrar visor</button>
+    </header>
+    <p class="visor-advertencia">La sucesión de entradas del diccionario no constituye una traducción gramatical
+      validada a LESCO.</p>
+    <ol id="visor-entradas" class="visor-entradas" aria-label="Entradas en el orden candidato"></ol>
+    <div id="visor-marco" class="visor-marco"></div>
+    <footer class="visor-pie">
+      <button id="btn-sena-anterior" type="button">◀ Seña anterior</button>
+      <span id="visor-posicion" class="visor-posicion"></span>
+      <button id="btn-sena-siguiente" type="button">Seña siguiente ▶</button>
+      <a id="visor-enlace" class="visor-enlace" target="_blank" rel="noopener noreferrer" hidden>Abrir página oficial ↗</a>
+      <span class="visor-fuente">Fuente: Diccionario LESCO, CENAREC</span>
+    </footer>
+    <p id="visor-estado" class="visor-estado" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
 <footer class="controles">
   <div class="botones-principales">
     <button id="btn-iniciar" type="button" class="primario">Iniciar demostración</button>
@@ -100,6 +163,8 @@
   <ul class="leyenda" aria-label="Leyenda">
     <li class="c-modelo-real">Traza histórica real</li>
     <li class="c-guion">Agente simulado (guion)</li>
+    <li class="c-reglas">Motor local de reglas (no es un LLM)</li>
+    <li class="c-ia-vivo">IA real en vivo (API)</li>
     <li class="c-mcp">Llamada MCP</li>
     <li class="c-politica">Decisión de política</li>
     <li class="c-guardado">Guardado real</li>
@@ -107,5 +172,7 @@
   </ul>
 </footer>
 <script src="/app.js"></script>
+<script src="/voz.js"></script>
+<script src="/visor_cenarec.js"></script>
 </body>
 </html>

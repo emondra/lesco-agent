@@ -1,0 +1,36 @@
+{
+  "nombre": "voz-ia",
+  "descripcion": "Demo web, modo de voz con IA real (fase 2): configuración B (instrucciones genéricas + SKILL.md) con claude-sonnet-5-5, la política de la demo (guardar requiere aprobación humana) y el servidor MCP real vinculado a un caso temporal. Límites más estrictos que el experimento (B usó como máximo 6 pasos y 39 433 tokens). Lo ejecuta demo_web/ejecutor_api.py en un proceso aparte.",
+  "instrucciones": [
+    "agente/instrucciones_genericas.md",
+    "skill/SKILL.md"
+  ],
+  "modelo": "claude-sonnet-5-5",
+  "esfuerzo": "medium",
+  "politica": "politica/politica_demo.json",
+  "limites": {
+    "max_pasos": 10,
+    "presupuesto_tokens": 60000,
+    "max_tokens_por_respuesta": 4000
+  },
+  "carpeta_trazas": "trazas/sueltas/voz_ia_no_se_usa",
+  "carpeta_salidas": "resultados/salidas/voz_ia_no_se_usa",
+  "casos": "eval/demo/casos_demo.jsonl",
+  "servidores": [
+    {
+      "nombre": "lesco",
+      "comando": [
+        "python",
+        "mcp_server/servidor_lesco.py",
+        "--casos",
+        "{casos}",
+        "--caso",
+        "{caso}",
+        "--salidas",
+        "{salidas}"
+      ]
+    }
+  ],
+  "guion_simulado": "NO_SE_USA: este modo llama al modelo real a través de la API",
+  "envolver_resultados": true
+}

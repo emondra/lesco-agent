@@ -13,7 +13,15 @@ const estado = {
   corridas: [],
   sondeo: null,
   simIniciada: false,
+  seguir: true,       // modo voz: el cursor sigue al último evento mientras llegan
+  motorVoz: "reglas", // modo voz: "reglas" (motor local) o "ia" (IA real por la API, fase 2)
 };
+
+// Modos que ejecutan algo en el servidor (y su ruta de API).
+const API_EJECUCION = { sim: "/api/simulacion", voz: "/api/voz" };
+const esVozIA = () => estado.modo === "voz" && estado.motorVoz === "ia";
+const rutaEjecucion = (modo) => (modo === "voz" && estado.motorVoz === "ia" ? "/api/voz-ia" : API_EJECUCION[modo]);
+const esPruebaIA = () => esVozIA() && !!(estado.datos && estado.datos.modo_prueba);
 
 const $ = (id) => document.getElementById(id);
 
@@ -53,12 +61,15 @@ async function pedir(url, opciones) {
 }
 
 const postJSON = (url, cuerpo) =>
-  pedir(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo || {}) });
+  pedir(url, { method: "POST", headers: { "Content-Type": "application/json", "X-Lesco-Demo": "1" },
+               body: JSON.stringify(cuerpo || {}) });
 
 // ===================================================================== clasificación de eventos
 function categoria(e) {
   if (e.tipo === "inicio") return "c-sistema";
   if (e.tipo === "fin") return "c-resumen";
+  if (e.tipo === "respuesta_modelo" && esVozIA()) return "c-ia-vivo";
+  if (e.tipo === "respuesta_modelo" && estado.modo === "voz") return "c-reglas";
   if (e.tipo === "respuesta_modelo") return estado.modo === "real" ? "c-modelo-real" : "c-guion";
   if (e.tipo === "herramienta") {
     if (e.decision === "denegar") return "c-denegada";
@@ -76,6 +87,8 @@ function tipoLegible(e) {
     "c-resumen": "Host · fin de la ejecución",
     "c-modelo-real": "Modelo real (traza histórica)",
     "c-guion": "Agente simulado · guion fijo",
+    "c-reglas": "Motor local de reglas · no es un LLM",
+    "c-ia-vivo": esPruebaIA() ? "API de PRUEBA local · no es Claude" : "IA real en vivo · claude-sonnet-5-5 (API)",
     "c-mcp": "Llamada MCP · permitida",
     "c-guardado": "Guardado real",
     "c-denegada": "Denegada por la política",
@@ -96,11 +109,15 @@ function resumenArgs(e) {
 
 function tituloEvento(e) {
   if (e.tipo === "inicio") return `Inicio · configuración ${e.configuracion} · caso ${e.caso_id}`;
+  if (e.tipo === "fin" && esVozIA()) return `Fin · ${e.motivo}`;
+  if (e.tipo === "fin" && estado.modo === "voz") return `Fin · motor de reglas terminado (el host registra: ${e.motivo})`;
   if (e.tipo === "fin") return estado.modo === "sim" ? `Fin · guion completado (el host registra: ${e.motivo})` : `Fin · ${e.motivo}`;
   if (e.tipo === "respuesta_modelo") {
     const n = (e.herramientas || []).length;
-    const pide = n ? `solicita ${n} herramienta${n > 1 ? "s" : ""}` : "respuesta final";
+    const pide = n ? `solicita ${n} herramienta${n > 1 ? "s" : ""}` : "da su respuesta final";
     if (estado.modo === "sim") return `Turno ${e.paso} del guion: ${e.texto || pide}`;
+    if (esVozIA()) return `Paso ${e.paso}: el modelo ${pide}`;
+    if (estado.modo === "voz") return `Paso ${e.paso} · ${e.texto || pide}`;
     return `Paso ${e.paso}: el modelo ${pide}`;
   }
   if (e.tipo === "herramienta") return `${corta(e.nombre)}(${resumenArgs(e)})`;
@@ -137,6 +154,12 @@ function pintar() {
     ins.textContent = c
       ? `TRAZA REAL · ejecución histórica del ${String(c.fecha).slice(0, 10)} · no es una llamada API en vivo`
       : "TRAZA REAL · ejecución histórica · no es una llamada API en vivo";
+  } else if (esPruebaIA()) {
+    ins.textContent = "VOZ · API DE PRUEBA LOCAL — NO ES CLAUDE (solo pruebas) · servidor MCP real";
+  } else if (esVozIA()) {
+    ins.textContent = "VOZ · IA REAL: claude-sonnet-5-5 + Skill (B) · API con costo · servidor MCP real";
+  } else if (estado.modo === "voz") {
+    ins.textContent = "VOZ · MOTOR LOCAL DE REGLAS — NO ES UN LLM · servidor MCP real · sin API";
   } else {
     ins.textContent = "DEMO SIMULADA · guion fijo, no es inferencia de un LLM · servidor MCP real · sin API";
   }
@@ -153,9 +176,14 @@ function pintar() {
   if (d.inicio) {
     const conf = d.inicio.configuracion;
     const descr = conf === "A" ? "A · instrucciones genéricas" : conf === "B" ? "B · genéricas + Skill"
-      : conf === "demo" ? "demo · genéricas + Skill + aprobación" : conf;
+      : conf === "demo" ? "demo · genéricas + Skill + aprobación"
+        : conf === "voz" ? "voz · motor de reglas, sin Skill"
+          : conf === "voz-ia" ? "voz-ia · genéricas + Skill (B) + aprobación" : conf;
     filas.push(["Config.", descr], ["Caso", d.inicio.caso_id],
-      ["Modelo", d.inicio.modelo === "simulado" ? "simulado (guion fijo)" : d.inicio.modelo],
+      ["Modelo", esPruebaIA() ? "API de PRUEBA local (no es Claude)"
+        : esVozIA() ? `${d.inicio.modelo} (API, en vivo)`
+        : estado.modo === "voz" ? "motor local de reglas, no es un LLM (la traza registra «simulado»)"
+        : d.inicio.modelo === "simulado" ? "simulado (guion fijo)" : d.inicio.modelo],
       ["Política", String(d.inicio.politica || "").split("/").pop()]);
     if (estado.modo === "real" && estado.datos) filas.push(["Repetición", estado.datos.corrida.repeticion]);
   } else {
@@ -206,8 +234,9 @@ function pintar() {
   // contador y botones
   $("contador").textContent = `${Math.max(estado.cursor + 1, 0)} / ${total}`;
   $("btn-anterior").disabled = estado.cursor <= 0;
-  const esperando = estado.modo === "sim" && estado.datos && estado.datos.estado === "esperando_aprobacion";
-  const enCurso = estado.modo === "sim" && estado.datos && ["en_curso", "esperando_aprobacion"].includes(estado.datos.estado);
+  const ejecuta = estado.modo in API_EJECUCION;
+  const esperando = ejecuta && estado.datos && estado.datos.estado === "esperando_aprobacion";
+  const enCurso = ejecuta && estado.datos && ["en_curso", "esperando_aprobacion"].includes(estado.datos.estado);
   $("btn-siguiente").disabled = estado.cursor >= total - 1;
   $("btn-reiniciar").disabled = total === 0;
   $("btn-iniciar").disabled = enCurso;
@@ -243,6 +272,8 @@ function pintar() {
   $("contingencia").hidden = !falla;
   if (falla) $("contingencia-texto").textContent =
     `La simulación no pudo completarse (${estado.datos.error}). Plan B: mostrar una ejecución histórica real.`;
+  if (typeof pintarVoz === "function") pintarVoz(d);   // monitor del modo de voz (voz.js)
+  if (typeof pintarVisor === "function") pintarVisor(d);   // visor de señas CENAREC (visor_cenarec.js)
 }
 
 function bloque(rotulo, ...contenido) {
@@ -254,7 +285,9 @@ function pintarDetalle(e, d) {
   cont.replaceChildren();
   if (!e) {
     $("detalle-titulo").textContent = "Evento";
-    cont.append(el("p", { class: "vacio" }, estado.modo === "sim"
+    cont.append(el("p", { class: "vacio" }, estado.modo === "voz"
+      ? "Dicte o escriba una oración, corríjala si hace falta y pulse «Confirmar texto y procesar»."
+      : estado.modo === "sim"
       ? "Pulse «Iniciar demostración» para ejecutar el agente simulado."
       : "Elija una corrida y pulse «Iniciar demostración»."));
     return;
@@ -290,6 +323,29 @@ function detalleInicio(cont, e) {
 }
 
 function detalleModelo(cont, e) {
+  if (esVozIA()) {
+    if (e.texto) cont.append(bloque(esPruebaIA() ? "Texto de la API de PRUEBA local (no es Claude)"
+      : "Texto devuelto por el modelo real (en vivo)", el("div", { class: "cita" }, e.texto)));
+    const hs = e.herramientas || [];
+    if (hs.length) {
+      cont.append(bloque("Herramientas que pidió el modelo",
+        el("ol", {}, hs.map((h) => el("li", {}, el("code", {}, corta(h.name)), " ", JSON.stringify(h.input))))));
+    }
+    const u = e.uso || {};
+    cont.append(bloque("Tokens del paso", `${u.input_tokens} entrada · ${u.output_tokens} salida · stop_reason=${e.stop_reason}`));
+    return;
+  }
+  if (estado.modo === "voz") {
+    cont.append(bloque("Decisión del motor local de reglas (no es razonamiento de un LLM)",
+      el("div", { class: "cita reglas" }, e.texto || "—")));
+    const hs = e.herramientas || [];
+    if (hs.length) {
+      cont.append(bloque("Herramientas que pide el motor de reglas",
+        el("ol", {}, hs.map((h) => el("li", {}, el("code", {}, corta(h.name)), " ", JSON.stringify(h.input))))));
+    }
+    cont.append(bloque("Tokens del paso", "0: no hay modelo de lenguaje"));
+    return;
+  }
   if (estado.modo === "sim") {
     cont.append(bloque("Texto del guion fijo (no es razonamiento de un modelo)",
       el("div", { class: "cita guion" }, e.texto || "—")));
@@ -308,7 +364,7 @@ function detalleModelo(cont, e) {
 }
 
 function cajaPolitica(e) {
-  const confirmada = /persona/.test(e.razon || "");
+  const confirmada = /persona|interfaz web local/.test(e.razon || "");
   const txt = confirmada
     ? `Política del host: CONFIRMAR → ${e.decision === "permitir" ? "APROBADA" : "RECHAZADA"} · ${e.razon}`
     : `Política del host: ${String(e.decision).toUpperCase()} · ${e.razon}`;
@@ -346,7 +402,7 @@ function detalleHerramienta(cont, e) {
         el("td", {}, x.tipo === "sena" ? enlaceDiccionario(x.url, x.id) : "—")))));
     if ((s.errores || []).length) cont.append(bloque("Errores", JSON.stringify(s.errores)));
   } else if (h === "guardar_resultado") {
-    const lugar = estado.modo === "sim"
+    const lugar = estado.modo !== "real"
       ? "en la carpeta temporal aislada de la demo (se elimina al cerrar)"
       : `en ${estado.datos.ruta_guardado} (archivo histórico, solo lectura)`;
     const caja = el("div", { class: "guardado-real" },
@@ -372,7 +428,9 @@ function detalleFin(cont, e) {
     ["Denegadas por la política", hs.filter((x) => x.decision === "denegar").length],
     ["Errores del servidor", hs.filter((x) => x.es_error && x.decision === "permitir").length],
     ["Escrituras realizadas", escrituras],
-    ["Tokens", estado.modo === "sim" ? `${e.tokens_entrada} + ${e.tokens_salida} (estimados por el simulador, sin costo)`
+    ["Tokens", esVozIA() ? `${e.tokens_entrada} entrada + ${e.tokens_salida} salida · costo estimado ` +
+      `US$ ${estado.datos && estado.datos.costo_estimado_usd != null ? estado.datos.costo_estimado_usd.toFixed(4) : "?"} (estimación desde tokens)`
+      : estado.modo === "voz" ? "0 (motor de reglas: no hay modelo de lenguaje)" : estado.modo === "sim" ? `${e.tokens_entrada} + ${e.tokens_salida} (estimados por el simulador, sin costo)`
       : `${e.tokens_entrada} entrada + ${e.tokens_salida} salida`],
     ["Duración", `${e.duracion_s} s`],
   ];
@@ -381,8 +439,10 @@ function detalleFin(cont, e) {
   }
   cont.append(el("table", { class: "resumen-tabla" }, filas.map(([k, v]) => el("tr", {}, el("td", {}, k), el("td", {}, v)))));
   if (e.respuesta_final) {
-    cont.append(bloque(estado.modo === "sim" ? "Mensaje final del guion (texto fijo)" : "Respuesta final del modelo (histórica)",
-      el("div", { class: `cita ${estado.modo === "sim" ? "guion" : ""}` }, e.respuesta_final)));
+    const rotuloFinal = esVozIA() ? "Respuesta final del modelo (en vivo)" : estado.modo === "voz" ? "Mensaje final del motor de reglas (construido con las respuestas del servidor)"
+      : estado.modo === "sim" ? "Mensaje final del guion (texto fijo)" : "Respuesta final del modelo (histórica)";
+    const claseFinal = esVozIA() ? "" : estado.modo === "voz" ? "reglas" : estado.modo === "sim" ? "guion" : "";
+    cont.append(bloque(rotuloFinal, el("div", { class: `cita ${claseFinal}` }, e.respuesta_final)));
     if (estado.modo === "sim" && escrituras === 0) {
       cont.append(el("div", { class: "denegada-caja" },
         "Atención: el guion fijo no se adapta a lo ocurrido. En esta ejecución no hubo ninguna escritura; " +
@@ -449,9 +509,11 @@ async function iniciarSim() {
 function sondear() {
   clearTimeout(estado.sondeo);
   estado.sondeo = setTimeout(async () => {
-    if (estado.modo !== "sim") return;
+    const modo = estado.modo;
+    if (!(modo in API_EJECUCION)) return;
     try {
-      const datos = await pedir("/api/simulacion");
+      const datos = await pedir(rutaEjecucion(modo));
+      if (estado.modo !== modo) return;
       estado.datos = datos;
       estado.eventos = datos.eventos;
       if (estado.cursor < 0 && estado.eventos.length) estado.cursor = 0;
@@ -467,7 +529,7 @@ function sondear() {
 async function responderAprobacion(aprobar) {
   $("btn-aprobar").disabled = $("btn-rechazar").disabled = true;
   try {
-    await postJSON("/api/simulacion/aprobacion", { aprobar });
+    await postJSON(`${rutaEjecucion(estado.modo)}/aprobacion`, { aprobar });
   } finally {
     $("btn-aprobar").disabled = $("btn-rechazar").disabled = false;
   }
@@ -481,8 +543,11 @@ async function cambiarModo(modo) {
   document.body.dataset.modo = modo;
   $("btn-modo-real").setAttribute("aria-pressed", String(modo === "real"));
   $("btn-modo-sim").setAttribute("aria-pressed", String(modo === "sim"));
+  $("btn-modo-voz").setAttribute("aria-pressed", String(modo === "voz"));
   $("panel-real").hidden = modo !== "real";
   $("panel-sim").hidden = modo !== "sim";
+  $("panel-voz").hidden = modo !== "voz";
+  if (modo !== "voz" && typeof detenerMicrofono === "function") detenerMicrofono();
   clearTimeout(estado.sondeo);
   estado.datos = null;
   estado.eventos = [];
@@ -499,6 +564,18 @@ async function cambiarModo(modo) {
       }
     } catch { /* se mostrará al iniciar */ }
   }
+  if (modo === "voz") {
+    estado.seguir = true;
+    try {
+      const datos = await pedir(rutaEjecucion("voz"));
+      if (datos.estado !== "inactiva") {
+        estado.datos = datos;
+        estado.eventos = datos.eventos;
+        estado.cursor = estado.eventos.length - 1;
+        if (["en_curso", "esperando_aprobacion"].includes(datos.estado)) sondear();
+      }
+    } catch { /* se mostrará al confirmar */ }
+  }
   pintar();
 }
 
@@ -509,12 +586,16 @@ function avisarError(err) {
 async function iniciar() {
   try {
     if (estado.modo === "real") await iniciarReal();
+    else if (estado.modo === "voz") await iniciarVoz();
     else await iniciarSim();
   } catch (err) { avisarError(err); }
 }
 
 function siguiente() { if (estado.cursor < estado.eventos.length - 1) { estado.cursor++; pintar(); } }
-function anterior() { if (estado.cursor > 0) { estado.cursor--; pintar(); } }
+function anterior() {
+  if (estado.modo === "voz") estado.seguir = false;   // navegar hacia atrás pausa el autoseguimiento
+  if (estado.cursor > 0) { estado.cursor--; pintar(); }
+}
 function reiniciar() { estado.cursor = estado.eventos.length ? 0 : -1; pintar(); }
 function alternarDetalles() { estado.detalles = !estado.detalles; pintar(); }
 
@@ -526,6 +607,7 @@ function pantallaCompleta() {
 function conectar() {
   $("btn-modo-real").addEventListener("click", () => cambiarModo("real"));
   $("btn-modo-sim").addEventListener("click", () => cambiarModo("sim"));
+  $("btn-modo-voz").addEventListener("click", () => cambiarModo("voz"));
   $("btn-pantalla").addEventListener("click", pantallaCompleta);
   $("btn-iniciar").addEventListener("click", iniciar);
   $("btn-siguiente").addEventListener("click", siguiente);
@@ -541,7 +623,9 @@ function conectar() {
     $("btn-pantalla").textContent = document.fullscreenElement ? "Salir de pantalla completa" : "Pantalla completa";
   });
   document.addEventListener("keydown", (ev) => {
+    if (document.body.classList.contains("visor-abierto")) return;   // el visor CENAREC maneja sus teclas
     if (ev.target instanceof HTMLSelectElement || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (ev.target instanceof HTMLInputElement || ev.target instanceof HTMLTextAreaElement) return;   // se está escribiendo
     const k = ev.key;
     if (k === " " && ev.target instanceof HTMLButtonElement) return;   // el botón enfocado ya actúa
     if (k === "ArrowRight" || k === "PageDown" || k === " ") { ev.preventDefault(); siguiente(); }

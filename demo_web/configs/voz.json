@@ -1,0 +1,34 @@
+{
+  "nombre": "voz",
+  "descripcion": "Demo web, modo de voz (fase 1): motor local de reglas (NO es un LLM) con el host, la política de la demo y el servidor MCP reales. Los casos son temporales y los crea demo_web/voz.py.",
+  "instrucciones": [
+    "agente/instrucciones_genericas.md"
+  ],
+  "modelo": "motor-local-de-reglas",
+  "politica": "politica/politica_demo.json",
+  "limites": {
+    "max_pasos": 10,
+    "presupuesto_tokens": 400000,
+    "max_tokens_por_respuesta": 16000
+  },
+  "carpeta_trazas": "trazas/sueltas/voz_no_se_usa",
+  "carpeta_salidas": "resultados/salidas/voz_no_se_usa",
+  "casos": "eval/demo/casos_demo.jsonl",
+  "servidores": [
+    {
+      "nombre": "lesco",
+      "comando": [
+        "python",
+        "mcp_server/servidor_lesco.py",
+        "--casos",
+        "{casos}",
+        "--caso",
+        "{caso}",
+        "--salidas",
+        "{salidas}"
+      ]
+    }
+  ],
+  "guion_simulado": "NO_SE_USA: el adaptador demo_web/voz.py sustituye el modelo por el motor local de reglas",
+  "envolver_resultados": true
+}
